@@ -1,0 +1,18 @@
+Source-Makefile: package/network/utils/wlu/Makefile
+Package: wlu
+Version: 6.30.163.42-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_bcm470x +liblua
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: Proprietary Broadcom wl driver config utility
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  This package contains the proprietary utility (wl) for configuring the 
+ proprietary Broadcom wl driver.
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

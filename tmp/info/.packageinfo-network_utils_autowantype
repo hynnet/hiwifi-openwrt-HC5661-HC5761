@@ -1,0 +1,21 @@
+Source-Makefile: package/network/utils/autowantype/Makefile
+Package: autowantype
+Version: 1-20140306
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: HiWiFi WAN type check utility
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  autowantype: 1  means PPPOE
+ autowantype: 2  means DHCP
+ autowantype: 3  means Manual
+ autowantype: 99 means Cable problem
+http://www.hiwifi.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

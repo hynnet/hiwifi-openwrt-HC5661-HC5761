@@ -1,0 +1,22 @@
+Source-Makefile: package/network/ipv6/6relayd/Makefile
+Package: 6relayd
+Version: 2013-10-21-ad00c3dd9ee42f172870708724858ab502b3a689
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +kmod-ipv6 @!TARGET_avr32
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: DHCPv6(-PD)/RA Server & Relay
+Maintainer: Steven Barth <steven@midlink.org>
+Source: 6relayd-2013-10-21.tar.bz2
+Type: ipkg
+Description:  6relayd is a daemon for serving and relaying IPv6 management protocols to
+ configure clients and downstream routers.
+
+ 6relayd provides server services for RA, stateless DHCPv6, DHCPv6-PD and can
+ be used to relay RA, DHCPv6 and NDP between routed (non-bridged) interfaces
+ in case no delegated prefixes are provided by the upstream router.
+Steven Barth <steven@midlink.org>
+@@
+
+

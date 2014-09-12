@@ -1,0 +1,80 @@
+#!/bin/sh
+# Copyright (C) 2013-2014 www.hiwifi.com
+
+. /lib/functions/network.sh
+
+LAN_STATUS=0
+WAN_STATUS=0
+WAN_MODE=
+
+if [[ -n "$2" ]]; then
+	case "$2" in
+		lan)
+			LAN_STATUS=1
+			;;
+		wan)
+			WAN_STATUS=1
+			;;
+	esac
+fi
+
+if [[ "$WAN_STATUS" = "1" ]]; then
+	if [[ -n "$3" ]]; then
+		WAN_MODE=$3
+	fi
+fi
+
+if [ "$LAN_STATUS" = "0" ]; then
+	json_load "$(ubus call network.interface.wan status -S)"
+	json_get_var wan_dev device
+
+	json_load "$(devstatus $wan_dev)"
+	json_get_var wan_link link
+
+	if [[ -n "$WAN_MODE" ]]; then
+		case "$WAN_MODE" in
+			"10half")
+				ethtool -s eth1 autoneg off speed 10 duplex half
+				;;
+			"10full")
+				ethtool -s eth1 autoneg off speed 10 duplex full
+				;;
+			"100half")
+				ethtool -s eth1 autoneg off speed 100 duplex half
+				;;
+			"100full")
+				ethtool -s eth1 autoneg off speed 100 duplex full
+				;;
+			"auto")
+				ethtool -s eth1 autoneg on
+				;;
+			*)
+				ethtool -s eth1 autoneg on
+				;;
+		esac
+	else
+		if [[ "$wan_link" -eq 0 ]]; then
+			echo "WAN Port link:down"
+		else
+			wan_speed=$(ethtool eth1 | grep "Speed" | awk '{ print $2 }')
+			wan_duplex=$(ethtool eth1 | grep "Duplex" | awk '{ print $2 }')
+			echo "WAN Port link:up $wan_speed $wan_duplex"
+		fi
+	fi
+else
+	swconfig dev eth0 show | grep "port:4"| grep -qs "link:up"
+
+	if [ $? -eq 0 ]; then
+		echo "LAN Port 1 link:up"
+	else
+		echo "LAN Port 1 link:down"
+	fi
+
+	swconfig dev eth0 show | grep "port:3"| grep -qs "link:up"
+
+	if [ $? -eq 0 ]; then
+		echo "LAN Port 2 link:up"
+	else
+		echo "LAN Port 2 link:down"
+	fi
+fi

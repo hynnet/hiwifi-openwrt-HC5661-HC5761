@@ -1,0 +1,15 @@
+#!/bin/sh /etc/rc.common
+
+stop()
+{
+	if [ "dhcp" = "$(uci get network.wan.proto)" ];then
+		kill -USR2 $(pidof udhcpc)
+	fi
+}
+
+start()
+{
+	if [ "dhcp" = "$(uci get network.wan.proto)" ];then
+	        kill -USR1 $(pidof udhcpc)
+	fi
+}

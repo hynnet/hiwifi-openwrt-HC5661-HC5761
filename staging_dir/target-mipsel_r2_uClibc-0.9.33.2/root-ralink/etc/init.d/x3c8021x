@@ -1,0 +1,80 @@
+#!/bin/sh /etc/rc.common
+#Author:eric
+
+EXTRA_COMMANDS="status"
+
+START=90
+STOP=10
+
+SERVICE_DAEMONIZE=1
+
+x3c_go()
+{
+	local Username
+	local Password
+	local Wanif
+	local Xorkey
+	local Mcast
+	local Ipcommit
+	local Vercommit
+	local Assitif
+	local Privikey
+	local Md5ver
+	local Lang
+	local Ver
+	local Fullver
+
+	Username=$(uci get x3c8021x.@base_set[0].username)
+	Password=$(uci get x3c8021x.@base_set[0].password)
+	Wanif=$(uci get x3c8021x.@base_set[0].wanif)
+
+	Xorkey=$(uci get x3c8021x.@adv_set[0].xorkey)
+	Mcast=$(uci get x3c8021x.@adv_set[0].mcast)
+	Ipcommit=$(uci get x3c8021x.@adv_set[0].ipcommit)
+	Vercommit=$(uci get x3c8021x.@adv_set[0].vercommit)
+
+	Assitif=$(uci get x3c8021x.@adv_set[0].assitif)
+	Privikey=$(uci get x3c8021x.@adv_set[0].privikey)
+
+	Md5ver=$(uci get x3c8021x.@adv_set[0].md5ver)	
+	Lang=$(uci get x3c8021x.@adv_set[0].lang)
+	Ver=$(uci get x3c8021x.@adv_set[0].ver)
+
+	if [ $(echo ${Ver:-V3} | cut -c 2) -gt 3 ];
+	then
+		Fullver=`echo -e "${Lang:-CH}\x11${Ver:-V5.10-0304}"`
+	else
+		Fullver="${Lang:-CH} ${Ver:-V3.60-6208}"
+	fi
+
+	service_start /usr/sbin/x3c8021x -u "$Username" -p "$Password" \
+		-I "$Wanif" -x "$Xorkey" -m "$Mcast" -i "$Ipcommit" -v "$Vercommit" \
+		-A "$Assitif" -P "${Privikey:-1234567890123456}" -M "$Md5ver" -V "$Fullver"
+}
+
+start()
+{
+	local Enabled=$(uci get x3c8021x.@base_set[0].enable 2>/dev/null)
+
+	if [ ${Enabled:-0} -eq 1 ] ;
+	then
+		x3c_go
+	else
+		stop
+	fi
+}
+
+stop()
+{
+	sync
+	service_stop /usr/sbin/x3c8021x
+}
+
+status()
+{
+	if `pgrep x3c8021x > /dev/null 2>&1`; then
+		echo running
+	else
+		echo stopped
+	fi
+}

@@ -1,0 +1,19 @@
+Source-Makefile: package/nxp/JIP-Cloud-Nabto/Makefile
+Package: JIP-Cloud-Nabto
+Submenu: Cloud Support
+Version: v0_1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 6LoWPAN-libJIP +libavahi-common +libavahi-client +libdbus
+Menu-Depends: 
+Provides: 
+Section: nxp
+Category: NXP
+Title: Nabto - JIP integration
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  Provides support the Nabto cloud system
+http://www.jennic.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

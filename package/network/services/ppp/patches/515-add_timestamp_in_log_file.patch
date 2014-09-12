@@ -1,0 +1,32 @@
+pppd: Add timestamp in the log file
+
+When pppd is writing log to the log file, input the timestamp first like the system log.
+
+Signed-off-by: Duke Wu <duke.wu@hiwifi.tw>
+
+--- a/pppd/utils.c
++++ b/pppd/utils.c
+@@ -667,11 +667,22 @@ log_write(level, buf)
+ {
+     syslog(level, "%s", buf);
+     if (log_to_fd >= 0 && (level != LOG_DEBUG || debug)) {
++	char time[32] = {0};
++	FILE* fp = NULL;
++	int len = 0;
++	
++	fp = popen("date | awk '{printf \"%3s %2s %8s \",$2,$3,$4}' 2>/dev/null", "r");
++	if (fp != NULL) {
++		len = fread(time, sizeof(char), sizeof(time), fp);
++		pclose(fp);
++	}
++
+ 	int n = strlen(buf);
+ 
+ 	if (n > 0 && buf[n-1] == '\n')
+ 	    --n;
+-	if (write(log_to_fd, buf, n) != n
++	if (write(log_to_fd, time, len) != len
++	    || write(log_to_fd, buf, n) != n
+ 	    || write(log_to_fd, "\n", 1) != 1)
+ 	    log_to_fd = -1;
+     }

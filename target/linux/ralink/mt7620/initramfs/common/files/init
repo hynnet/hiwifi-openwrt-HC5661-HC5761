@@ -1,0 +1,49 @@
+#!/bin/sh
+# Copyright (C) 2013-2014 www.hiwifi.com
+
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export HIWIFI_ROM="/tmp/data/hiwifi/rom.bin"
+export HIWIFI_ROM_MD5="/tmp/data/hiwifi/rom.md5"
+export CONF_TAR=/tmp/sysupgrade.tgz
+
+. /lib/functions.sh
+
+echo "-HiWiFi initrd-"
+
+mkdir /proc
+mkdir /tmp
+mkdir /sys
+mkdir /mnt
+
+mount proc /proc -t proc
+mount sysfs /sys -t sysfs
+pi_size=$(awk '/MemTotal:/ {l=5242880;mt=($2*1024);print((s=mt/2)<l)&&(mt>l)?mt-l:s}' /proc/meminfo)
+mount tmpfs /tmp -t tmpfs -o size=$pi_size,nosuid,nodev,mode=1777
+
+hiwifi_led_off
+
+rootfs_part="$(find_mtd_part rootfs)"
+
+mount $rootfs_part /mnt -t squashfs
+
+if [[ "$?" -eq "0" ]]; then
+	umount /tmp
+	umount /sys
+	umount /proc
+	exec switch_root /mnt /etc/preinit
+else
+	mount_storage
+
+	if [[ -f "$HIWIFI_ROM" -a -f "$HIWIFI_ROM_MD5" ]]; then
+		md5sum -c -s "$HIWIFI_ROM_MD5"
+		if [[ "$?" -eq 0 ]]; then
+			hiwifi_do_upgrade "$HIWIFI_ROM"
+			if [[ "$?" -eq "0" ]]; then
+				touch /tmp/sysupgrade
+			fi
+		fi
+		exec /sbin/init
+	else
+		exec /sbin/init
+	fi
+fi

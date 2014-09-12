@@ -1,0 +1,20 @@
+Source-Makefile: package/luasec/Makefile
+Package: luasec
+Submenu: Lua
+Version: 0.4-4f37552d6f0b9f416059a8245fcf237d1c585733-iridium77.20130419.1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +lua +libopenssl +luasocket
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: lang
+Category: Languages
+Title: LuaSec
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: luasec-0.4-4f37552d6f0b9f416059a8245fcf237d1c585733.tar.gz
+Type: ipkg
+Description:   LuaSec is a binding for OpenSSL library to provide TLS/SSL communication.
+http://luasec.luaforge.net/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

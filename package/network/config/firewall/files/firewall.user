@@ -1,0 +1,10 @@
+# This file is interpreted as shell script.
+# Put your custom iptables rules here, they will
+# be executed with each firewall (re-)start.
+
+#close lock file /tmp/run/firewall.lock
+exec 9>&-
+
+for SCRIPT in /etc/firewall.d/* ; do
+	[ -x "$SCRIPT" ] && "$SCRIPT"
+done

@@ -1,0 +1,21 @@
+--- a/Makefile	2013-09-29 19:13:45.830737500 +0800
++++ b/Makefile	2013-09-30 09:42:24.191179256 +0800
+@@ -48,7 +48,7 @@
+ # Targets to build
+ STATIC=libiw.a
+ DYNAMIC=libiw.so.$(WT_VERSION)
+-PROGS= iwconfig iwlist iwpriv iwspy iwgetid iwevent ifrename
++PROGS= iwconfig iwlist iwpriv iwspy iwgetid iwevent ifrename hcwifi.so
+ MANPAGES8=iwconfig.8 iwlist.8 iwpriv.8 iwspy.8 iwgetid.8 iwevent.8 ifrename.8
+ MANPAGES7=wireless.7
+ MANPAGES5=iftab.5
+@@ -135,6 +135,9 @@
+ 
+ macaddr: macaddr.o $(IWLIB)
+ 
++hcwifi.so: iwpriv_lua.so iwlib.so
++	$(CC) $^ -o $@ $(LDFLAGS) -shared -llua
++
+ # Always do symbol stripping here
+ iwmulticall: iwmulticall.o
+ 	$(CC) $(LDFLAGS) -Wl,-s $(XCFLAGS) -o $@ $^ $(LIBS)

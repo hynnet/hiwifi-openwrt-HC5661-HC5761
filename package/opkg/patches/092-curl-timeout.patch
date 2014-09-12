@@ -1,0 +1,15 @@
+diff -urN opkg-618_origin/libopkg/opkg_download.c opkg-618/libopkg/opkg_download.c
+--- opkg-618_origin/libopkg/opkg_download.c	2011-04-08 21:33:11.000000000 +0800
++++ opkg-618/libopkg/opkg_download.c	2013-04-16 17:32:54.366231087 +0800
+@@ -135,6 +135,11 @@
+     {
+ 	curl_easy_setopt (curl, CURLOPT_URL, src);
+ 	curl_easy_setopt (curl, CURLOPT_WRITEDATA, file);
++	// Reduce default connection timeout from 300s to 30s.
++	// If download speed is below 1 byte/sec for 30s, abort.
++	curl_easy_setopt (curl, CURLOPT_CONNECTTIMEOUT, 30L);
++	curl_easy_setopt (curl, CURLOPT_LOW_SPEED_LIMIT, 1L);
++	curl_easy_setopt (curl, CURLOPT_LOW_SPEED_TIME, 30L);
+ 
+ 	res = curl_easy_perform (curl);
+ 	fclose (file);

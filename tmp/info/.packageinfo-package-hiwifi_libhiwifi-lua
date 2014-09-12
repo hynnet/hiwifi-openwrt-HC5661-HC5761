@@ -1,0 +1,19 @@
+Source-Makefile: package/package-hiwifi/libhiwifi-lua/Makefile
+Package: libhiwifi-lua
+Version: 0.72-20140620-01
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +nixio +luasec +libtw-lua +liblua
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: net
+Category: Turbo Wireless
+Title: Common Library for Lua
+Maintainer: Hong Shen <sh@ikwcn.com>
+Source: 
+Type: ipkg
+Description: Common Library for Lua
+http://10.9.1.43/cloud
+Hong Shen <sh@ikwcn.com>
+@@
+
+

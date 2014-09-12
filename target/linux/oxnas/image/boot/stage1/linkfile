@@ -1,0 +1,28 @@
+/*
+ * Link control script for the Stage 1 loader.
+ * ******************************************
+ * JJL: 21/07/06 Add text end label for defining the CRC check image limits.
+ *
+ */
+OUTPUT_FORMAT("elf32-littlearm");
+OUTPUT_ARCH(arm)
+SECTIONS
+{
+	. = 0x50000000;
+	.init : {
+		KEEP(*(.init))		
+	}
+	/* . = 0x50000054; */
+	code_start = . ;
+	.text : {
+		*(.text.*)
+	}
+	.rodata ALIGN(4) : { *(.rodata) }
+	.data ALIGN(4) : { *(.data) }
+	.got ALIGN(4) : { *(.got) }
+	. = ALIGN(4);
+    code_length = . - check_start;
+	__bss_start = .;
+	.bss : { *(.bss) }
+	_end = .;
+}

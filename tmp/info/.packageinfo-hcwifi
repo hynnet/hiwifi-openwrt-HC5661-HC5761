@@ -1,0 +1,52 @@
+Source-Makefile: package/hcwifi/Makefile
+Package: kmod-hcwifi
+Menu: 1
+Submenu: Wireless Drivers
+Version: <LINUX_VERSION>+1.2.5-20
+Depends: @TARGET_ar71xx||TARGET_bcm470x||BROKEN
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Hardcore Wireless Driver
+Maintainer: Abu Cheng <abu.zheng@hiwifi.tw>
+Source: 
+Type: ipkg
+Description:  This package contains a driver for Hardcore wireless chipsets.
+http://www.macrohard.com.cn/
+Abu Cheng <abu.zheng@hiwifi.tw>
+@@
+Config:
+	if PACKAGE_kmod-hcwifi
+
+		config HCWIFI_DEBUG
+			bool "Enable compilation of debugging features"
+			depends on BUILD_NIGHTLY_DEBUG
+			default n
+			help
+				Select this to see extensive information about
+				the internal state of hcwifi.
+
+		choice
+			prompt "Target chipset selection"
+			default HCWIFI_AR9331
+			help
+			  Select based devices.
+	
+			config HCWIFI_AR9331
+				bool "AR9331"
+				depends on TARGET_ar71xx
+				help
+				no help infomation now.
+					
+			config HCWIFI_AR9344
+				bool "AR9344"
+				depends on TARGET_ar71xx
+				help
+				no help infomation now.
+	
+		endchoice
+	endif
+@@
+
+

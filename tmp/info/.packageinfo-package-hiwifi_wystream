@@ -1,0 +1,19 @@
+Source-Makefile: package/package-hiwifi/wystream/Makefile
+Package: wystream
+Submenu: Accelerator/Uploader
+Version: 0.0.4-20140208
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpthread +libstdcpp +protobuf +zlib
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Turbo Wireless
+Title: wystream
+Maintainer: Qin Wei <wei.qin@hiwifi.tw>
+Source: 
+Type: ipkg
+Description: 	wystream is a multiple task uploader for WeiYun TCP Stream skydrive, developed by Qin Wei <wei.qin@hiwifi.tw>
+http://www.turboer.com/
+Qin Wei <wei.qin@hiwifi.tw>
+@@
+
+

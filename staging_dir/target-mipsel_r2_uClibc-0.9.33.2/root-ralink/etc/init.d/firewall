@@ -1,0 +1,47 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2008-2010 OpenWrt.org
+
+START=45
+
+FW_LIBDIR=/lib/firewall
+
+fw_lock_log() {
+    echo "[$$] [$1] <$2> : $(date)" >>/tmp/firewall.log
+}
+
+fw() {
+	{
+		flock 9 
+		fw_lock_log $1 in
+		. $FW_LIBDIR/core.sh
+		fw_$1
+		fw_lock_log $1 out
+	} 9>/var/run/firewall.lock
+}
+
+start() {
+	move_from_keep
+	fw start
+}
+
+stop() {
+	fw stop
+}
+
+restart() {
+	fw restart
+}
+
+reload() {
+	fw reload
+}
+
+move_from_keep() {
+	touch /etc/config/keep-remove
+	keep=$(uci get keep-remove.firewall 2>/dev/null)
+	[ "$keep"x != "1x" ] && {
+		cp /rom/etc/firewall.user /etc/firewall.user
+		uci set keep-remove.firewall=1
+		uci commit keep-remove
+	}
+}

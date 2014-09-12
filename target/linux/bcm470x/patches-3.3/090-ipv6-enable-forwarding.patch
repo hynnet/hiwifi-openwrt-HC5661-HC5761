@@ -1,0 +1,15 @@
+*** linux-3.3.8.old/net/ipv6/ip6_output.c	2012-06-01 15:16:13.000000000 +0800
+--- linux-3.3.8/net/ipv6/ip6_output.c	2013-03-10 21:30:27.098856452 +0800
+***************
+*** 391,398 ****
+--- 391,400 ----
+  	struct neighbour *n;
+  	u32 mtu;
+  
++ /* comment out for ipv6 nat mode
+  	if (net->ipv6.devconf_all->forwarding == 0)
+  		goto error;
++ */
+  
+  	if (skb_warn_if_lro(skb))
+  		goto drop;

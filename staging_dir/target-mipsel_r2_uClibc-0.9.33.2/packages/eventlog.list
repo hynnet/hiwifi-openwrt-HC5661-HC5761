@@ -1,0 +1,14 @@
+./
+./usr
+./usr/include
+./usr/include/eventlog
+./usr/include/eventlog/evtlog.h
+./usr/include/eventlog/evtmaps.h
+./usr/lib
+./usr/lib/libevtlog.so.0.0.0
+./usr/lib/pkgconfig
+./usr/lib/pkgconfig/eventlog.pc
+./usr/lib/libevtlog.a
+./usr/lib/libevtlog.so.0
+./usr/lib/libevtlog.so
+./host

@@ -1,0 +1,34 @@
+Source-Makefile: package/package-hiwifi/libtw/Makefile
+Package: libtw
+Version: 0.0.63-20140616
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libuci +libbdinfo
+Menu-Depends: 
+Provides: 
+Section: libs
+Category: Turbo Wireless
+Title: Turbo Wireless Common Library
+Maintainer: Li Kai <9@kai.li>
+Source: 
+Type: ipkg
+Description:  libtw description
+http://www.turboer.com/
+Li Kai <9@kai.li>
+@@
+
+Package: libtw-lua
+Version: 0.0.63-20140616
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libtw +liblua
+Menu-Depends: 
+Provides: 
+Section: libs
+Category: Turbo Wireless
+Title: Turbo Wireless Common Library for Lua
+Maintainer: Hong Shen <sh@ikwcn.com>
+Source: 
+Type: ipkg
+Description:  libtw description
+http://www.turboer.com/
+Hong Shen <sh@ikwcn.com>
+@@
+
+

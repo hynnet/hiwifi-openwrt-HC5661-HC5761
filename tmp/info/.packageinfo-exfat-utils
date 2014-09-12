@@ -1,0 +1,36 @@
+Source-Makefile: package/exfat-utils/Makefile
+Package: mkexfatfs
+Submenu: Filesystem
+Version: 1.0.1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: utils
+Category: Utilities
+Title: create exfat fs
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: exfat-utils-1.0.1.tar.gz
+Type: ipkg
+Description:   Utilities to create exfat filesystem.
+http://code.google.com/p/exfat/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: fsckexfat
+Submenu: Filesystem
+Version: 1.0.1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: utils
+Category: Utilities
+Title: check exfat fs
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: exfat-utils-1.0.1.tar.gz
+Type: ipkg
+Description:   Utilities to check exfat filesystem.
+http://code.google.com/p/exfat/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

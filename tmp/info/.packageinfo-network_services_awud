@@ -1,0 +1,18 @@
+Source-Makefile: package/network/services/awud/Makefile
+Package: awud
+Version: 1.0.0-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +kmod-hcwifi +iw-hcwifi
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: Auto Wake up Daemon
+Maintainer: Abu Cheng <abu.zheng@hiwifi.tw>
+Source: 
+Type: ipkg
+Description: 	Auto wake up wireless.
+http://www.hiwifi.com
+Abu Cheng <abu.zheng@hiwifi.tw>
+@@
+
+

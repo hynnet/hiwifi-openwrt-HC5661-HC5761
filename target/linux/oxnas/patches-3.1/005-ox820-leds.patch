@@ -1,0 +1,52 @@
+Index: linux-3.1.10/drivers/leds/Makefile
+===================================================================
+--- linux-3.1.10/drivers/leds/Makefile	(版本 11)
++++ linux-3.1.10/drivers/leds/Makefile	(版本 12)
+@@ -43,6 +43,9 @@
+ obj-$(CONFIG_LEDS_NS2)			+= leds-ns2.o
+ obj-$(CONFIG_LEDS_NETXBIG)		+= leds-netxbig.o
+ obj-$(CONFIG_LEDS_ASIC3)		+= leds-asic3.o
++obj-$(CONFIG_LEDS_OX820_STG212) += leds-gpio-ox820-stg212.o
++obj-$(CONFIG_LEDS_OX820_HMNDCE) += leds-gpio-ox820-hmndce.o
++obj-$(CONFIG_LEDS_OX820_POGOPLUG3) += leds-gpio-ox820-pogoplug3.o
+ 
+ # LED SPI Drivers
+ obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
+Index: linux-3.1.10/drivers/leds/Kconfig
+===================================================================
+--- linux-3.1.10/drivers/leds/Kconfig	(版本 11)
++++ linux-3.1.10/drivers/leds/Kconfig	(版本 12)
+@@ -24,6 +24,33 @@
+ 
+ comment "LED drivers"
+ 
++config LEDS_OX820_STG212
++    tristate "LED Support for Medion NAS"
++    depends on LEDS_CLASS
++    depends on GPIO_OX820
++    help
++        This option enables support for LEDs on Medion NAS
++        
++config LEDS_OX820_STG212_BUZZER
++    bool "Enable Buzzer support for Medion NAS"
++    depends on LEDS_OX820_STG212
++    help
++        This option enables support for Buzzer as LED class
++
++config LEDS_OX820_HMNDCE
++    tristate "LED Support for Home Media Network Drive CE"
++    depends on LEDS_CLASS
++    depends on GPIO_OX820
++    help
++        This option enables support for LEDs on Home Media Network Drive CE
++        
++config LEDS_OX820_POGOPLUG3
++    tristate "LED Support for PogoPlug Series 3"
++    depends on LEDS_CLASS
++    depends on GPIO_OX820
++    help
++        This option enables support for LEDs on PogoPlug Series 3
++        
+ config LEDS_88PM860X
+ 	tristate "LED Support for Marvell 88PM860x PMIC"
+ 	depends on LEDS_CLASS

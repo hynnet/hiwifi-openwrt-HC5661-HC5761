@@ -1,0 +1,13 @@
+--- a/include/linux/mtd/mtd.h
++++ b/include/linux/mtd/mtd.h
+@@ -165,6 +165,10 @@
+ 	// Kernel-only stuff starts here.
+ 	const char *name;
+ 	int index;
++
++#ifdef CONFIG_BCM47XX
++	spinlock_t *mlock;
++#endif
+ 
+ 	/* ECC layout structure pointer - read only! */
+ 	struct nand_ecclayout *ecclayout;

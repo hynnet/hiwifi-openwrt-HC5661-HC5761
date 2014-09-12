@@ -1,0 +1,139 @@
+Source-Makefile: package/nxp/6LoWPAN/Makefile
+Package: 6LoWPAN
+Menu: 1
+Version: 1v0_RC13
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: nxp
+Category: NXP
+Title: 6LoWPAN - NXP IEEE 802.15.4 Networking Support
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  6LoWPAN is an IPv6 networking layer on top of a IEEE 802.15.4 low power wireless network
+http://www.jennic.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: 6LoWPAN-6LoWPANd
+Version: 1v0_RC13
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 6LoWPAN +kmod-tun +libavahi-client
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: nxp
+Category: NXP
+Title: 6LoWPANd
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  6LoWPAN userspace routing daemon
+http://www.jennic.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: 6LoWPAN-JIPd
+Version: 1v0_RC13
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 6LoWPAN +libavahi-client
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: nxp
+Category: NXP
+Title: JIPd
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  JIP application level IPv4 gateway
+http://www.jennic.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: 6LoWPAN-libJIP
+Version: 1v0_RC13
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 6LoWPAN +libxml2
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: nxp
+Category: NXP
+Title: libJIP
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  JIP library
+http://www.jennic.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: 6LoWPAN-libJIP-CLI
+Version: 1v0_RC13
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 6LoWPAN +6LoWPAN-libJIP +libtecla
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: nxp
+Category: NXP
+Title: JIP Command Line Interface
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:   Command line application to interact with JIP devices
+http://www.jennic.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: 6LoWPAN-JIPweb
+Version: 1v0_RC13
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 6LoWPAN +6LoWPAN-libJIP +uhttpd +libavahi-client +libjson
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: nxp
+Category: NXP
+Title: JIP web interfaces
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  JIP web interfaces
+http://www.jennic.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: 6LoWPAN-libJIP-test
+Version: 1v0_RC13
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 6LoWPAN +6LoWPAN-libJIP +python
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: nxp
+Category: NXP
+Title: Support for libJIP Testing
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  Add support for testing libJIP
+http://www.jennic.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: 6LoWPAN-FirmwareDistribution
+Version: 1v0_RC13
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 6LoWPAN +libdaemon +libpthread
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: nxp
+Category: NXP
+Title: Support for Firmware Distribution
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  Firmware distribution daemon and client programs
+http://www.jennic.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

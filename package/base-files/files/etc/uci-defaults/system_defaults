@@ -1,0 +1,10 @@
+#!/bin/sh
+
+. /lib/functions/uci-defaults.sh
+. /lib/platform.sh
+
+tw_set_dhcpc
+
+uci commit system
+
+exit 0

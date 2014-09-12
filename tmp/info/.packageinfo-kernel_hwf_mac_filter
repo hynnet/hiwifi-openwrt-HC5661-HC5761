@@ -1,0 +1,18 @@
+Source-Makefile: package/kernel/hwf_mac_filter/Makefile
+Package: kmod-hwf_mac_filter
+Submenu: Netfilter Extensions
+Version: <LINUX_VERSION>-1
+Depends: 
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Driver for netfilter mac filter
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:   This package contains bridge mac filter modules
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

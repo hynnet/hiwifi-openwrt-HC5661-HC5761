@@ -1,0 +1,2 @@
+config bridge brdige
+	option enable '0'

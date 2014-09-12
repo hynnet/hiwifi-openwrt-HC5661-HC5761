@@ -1,0 +1,12 @@
+./
+./host
+./usr
+./usr/share
+./usr/share/aclocal
+./usr/share/aclocal/iconv.m4
+./usr/lib
+./usr/lib/libiconv-stub
+./usr/lib/libiconv-stub/include
+./usr/lib/libiconv-stub/include/iconv.h
+./usr/lib/libiconv-stub/lib
+./usr/lib/libiconv-stub/lib/libiconv.a

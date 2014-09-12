@@ -1,0 +1,171 @@
+--- a/drivers/mtd/devices/block2mtd.c
++++ b/drivers/mtd/devices/block2mtd.c
+@@ -29,6 +29,8 @@ struct block2mtd_dev {
+ 	struct block_device *blkdev;
+ 	struct mtd_info mtd;
+ 	struct mutex write_mutex;
++	rwlock_t bdev_mutex;
++	char devname[0];
+ };
+ 
+ 
+@@ -81,6 +83,12 @@ static int block2mtd_erase(struct mtd_in
+ 	size_t len = instr->len;
+ 	int err;
+ 
++	read_lock(&dev->bdev_mutex);
++	if (!dev->blkdev) {
++		err = -EINVAL;
++		goto done;
++	}
++
+ 	instr->state = MTD_ERASING;
+ 	mutex_lock(&dev->write_mutex);
+ 	err = _block2mtd_erase(dev, from, len);
+@@ -92,6 +100,10 @@ static int block2mtd_erase(struct mtd_in
+ 		instr->state = MTD_ERASE_DONE;
+ 
+ 	mtd_erase_callback(instr);
++
++done:
++	read_unlock(&dev->bdev_mutex);
++
+ 	return err;
+ }
+ 
+@@ -103,7 +115,19 @@ static int block2mtd_read(struct mtd_inf
+ 	struct page *page;
+ 	int index = from >> PAGE_SHIFT;
+ 	int offset = from & (PAGE_SIZE-1);
+-	int cpylen;
++	int cpylen, err = 0;
++
++	read_lock(&dev->bdev_mutex);
++	if (!dev->blkdev || (from > mtd->size)) {
++		err = -EINVAL;
++		goto done;
++	}
++
++	if (from + len > mtd->size)
++		len = mtd->size - from;
++
++	if (retlen)
++		*retlen = 0;
+ 
+ 	while (len) {
+ 		if ((offset + len) > PAGE_SIZE)
+@@ -113,10 +137,14 @@ static int block2mtd_read(struct mtd_inf
+ 		len = len - cpylen;
+ 
+ 		page = page_read(dev->blkdev->bd_inode->i_mapping, index);
+-		if (!page)
+-			return -ENOMEM;
+-		if (IS_ERR(page))
+-			return PTR_ERR(page);
++		if (!page) {
++			err = -ENOMEM;
++			goto done;
++		}
++		if (IS_ERR(page)) {
++			err = PTR_ERR(page);
++			goto done;
++		}
+ 
+ 		memcpy(buf, page_address(page) + offset, cpylen);
+ 		page_cache_release(page);
+@@ -127,7 +155,10 @@ static int block2mtd_read(struct mtd_inf
+ 		offset = 0;
+ 		index++;
+ 	}
+-	return 0;
++
++done:
++	read_unlock(&dev->bdev_mutex);
++	return err;
+ }
+ 
+ 
+@@ -177,13 +208,33 @@ static int block2mtd_write(struct mtd_in
+ 		size_t *retlen, const u_char *buf)
+ {
+ 	struct block2mtd_dev *dev = mtd->priv;
+-	int err;
++	int err = 0;
++
++	read_lock(&dev->bdev_mutex);
++	if (!dev->blkdev) {
++		err = -EINVAL;
++		goto done;
++	}
++
++	if (!len)
++		goto done;
++
++	if (to >= mtd->size) {
++		err = -ENOSPC;
++		goto done;
++	}
++
++	if (to + len > mtd->size)
++		len = mtd->size - to;
+ 
+ 	mutex_lock(&dev->write_mutex);
+ 	err = _block2mtd_write(dev, buf, to, len, retlen);
+ 	mutex_unlock(&dev->write_mutex);
+ 	if (err > 0)
+ 		err = 0;
++
++done:
++	read_unlock(&dev->bdev_mutex);
+ 	return err;
+ }
+ 
+@@ -226,36 +277,17 @@ static struct block2mtd_dev *add_device(
+ 	if (!devname)
+ 		return NULL;
+ 
+-	dev = kzalloc(sizeof(struct block2mtd_dev), GFP_KERNEL);
++	dev = kzalloc(sizeof(struct block2mtd_dev) + strlen(devname) + 1, GFP_KERNEL);
+ 	if (!dev)
+ 		return NULL;
+ 
+-	/* Get a handle on the device */
+-	bdev = blkdev_get_by_path(devname, mode, dev);
+-#ifndef MODULE
+-	if (IS_ERR(bdev)) {
+-
+-		/* We might not have rootfs mounted at this point. Try
+-		   to resolve the device name by other means. */
+-
+-		dev_t devt = name_to_dev_t(devname);
+-		if (devt)
+-			bdev = blkdev_get_by_dev(devt, mode, dev);
+-	}
+-#endif
++	strcpy(dev->devname, devname);
+ 
+-	if (IS_ERR(bdev)) {
+-		ERROR("error: cannot open device %s", devname);
++	if (_open_bdev(dev))
+ 		goto devinit_err;
+-	}
+-	dev->blkdev = bdev;
+-
+-	if (MAJOR(bdev->bd_dev) == MTD_BLOCK_MAJOR) {
+-		ERROR("attempting to use an MTD device as a block device");
+-		goto devinit_err;
+-	}
+ 
+ 	mutex_init(&dev->write_mutex);
++	rwlock_init(&dev->bdev_mutex);
+ 
+ 	/* Setup the MTD structure */
+ 	/* make the name contain the block device in */
+@@ -281,6 +313,7 @@ static struct block2mtd_dev *add_device(
+ 	dev->mtd._read = block2mtd_read;
+ 	dev->mtd.priv = dev;
+ 	dev->mtd.owner = THIS_MODULE;
++	dev->mtd.refresh_device = block2mtd_refresh;
+ 
+ 	if (mtd_device_register(&dev->mtd, NULL, 0)) {
+ 		/* Device didn't get added, so free the entry */

@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Copyright (C) 2012-2013 hiwifi.com
+#
+
+. /etc/functions.sh
+. /lib/bcm470x.sh
+. /lib/functions/uci-defaults.sh
+
+bcm470x_setup_interfaces()
+{
+	ucidef_set_interface_loopback
+
+	ucidef_set_interfaces_lan_wan "eth0.1" "eth0.2"
+}
+
+[ -e /etc/config/network ] && exit 0
+
+touch /etc/config/network
+
+bcm470x_setup_interfaces
+
+uci commit network
+
+exit 0

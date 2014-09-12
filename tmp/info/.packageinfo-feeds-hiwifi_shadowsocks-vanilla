@@ -1,0 +1,19 @@
+Source-Makefile: package/feeds-hiwifi/shadowsocks-vanilla/Makefile
+Package: shadowsocks-vanilla
+Version: 1.4.2-343940e6ffd2062b11dccab0894b73f7f32722f7
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl
+Menu-Depends: 
+Provides: 
+Build-Variant: openssl
+Section: net
+Category: Network
+Title: Vanilla Shadowsocks client (OpenSSL)
+Maintainer: Max Lv <max.c.lv@gmail.com>
+Source: shadowsocks-vanilla-1.4.2-343940e6ffd2062b11dccab0894b73f7f32722f7.tar.gz
+Type: ipkg
+Description: shadowsocks-vanilla - original version of shadowsocks client.
+https://github.com/madeye/shadowsocks-libev
+Max Lv <max.c.lv@gmail.com>
+@@
+
+

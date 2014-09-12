@@ -1,0 +1,16 @@
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 02f8dfe..a134023 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -777,10 +777,7 @@ set_rcvbuf:
+ 			clear_bit(SOCK_PASSSEC, &sock->flags);
+ 		break;
+ 	case SO_MARK:
+-		if (!capable(CAP_NET_ADMIN))
+-			ret = -EPERM;
+-		else
+-			sk->sk_mark = val;
++		sk->sk_mark = val;
+ 		break;
+ 
+ 		/* We implement the SO_SNDLOWAT etc to

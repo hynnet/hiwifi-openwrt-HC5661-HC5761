@@ -1,0 +1,10 @@
+./
+./usr
+./usr/include
+./usr/include/tcpd.h
+./usr/lib
+./usr/lib/libwrap.so.0.7.6
+./usr/lib/libwrap.so.0
+./usr/lib/libwrap.so
+./usr/lib/libwrap.a
+./host

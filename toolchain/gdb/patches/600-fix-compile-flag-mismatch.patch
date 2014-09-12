@@ -1,0 +1,32 @@
+--- a/gdb/configure	2012-09-13 16:01:22.000000000 +0200
++++ b/gdb/configure	2012-10-12 17:48:06.863908023 +0200
+@@ -828,8 +828,7 @@
+ YACC
+ YFLAGS
+ XMKMF'
+-ac_subdirs_all='testsuite
+-gdbtk
++ac_subdirs_all='gdbtk
+ multi-ice
+ gdbserver'
+ 
+@@ -5023,7 +5022,7 @@
+ 
+ 
+ 
+-subdirs="$subdirs testsuite"
++subdirs="$subdirs"
+ 
+ 
+ # Check whether to support alternative target configurations
+--- a/gdb/gdbserver/configure	2012-09-13 16:01:22.000000000 +0200
++++ b/gdb/gdbserver/configure	2012-10-12 17:49:29.775910147 +0200
+@@ -2173,7 +2173,7 @@
+       ac_cache_corrupted=: ;;
+     ,);;
+     *)
+-      if test "x$ac_old_val" != "x$ac_new_val"; then
++      if test "`echo x$ac_old_val`" != "`echo x$ac_new_val`"; then
+ 	# differences in whitespace do not lead to failure.
+ 	ac_old_val_w=`echo x $ac_old_val`
+ 	ac_new_val_w=`echo x $ac_new_val`

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+shutdown_wifi() {
+	echo "shutdown wifi"
+	/sbin/wifi down
+}
+
+boot_hook_add jffs2reset shutdown_wifi

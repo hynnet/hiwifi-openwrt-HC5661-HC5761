@@ -1,0 +1,9 @@
+#!/bin/sh
+
+do_bcm470x() {
+	. /lib/bcm470x.sh
+
+	bcm470x_board_detect
+}
+
+boot_hook_add preinit_main do_bcm470x

@@ -1,0 +1,17 @@
+Source-Makefile: package/package-hiwifi/luaprofiler/Makefile
+Package: luaprofiler
+Version: 20090316-7e77398391ad142b3aa156c528541eb1bd0fa199-20140610
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +liblua
+Menu-Depends: 
+Provides: 
+Section: utils
+Category: Utilities
+Title: LUA Profiler Tools
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: luaprofiler-20090316-7e77398391ad142b3aa156c528541eb1bd0fa199.tar.gz
+Type: ipkg
+Description: LUA Profiler Tools
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

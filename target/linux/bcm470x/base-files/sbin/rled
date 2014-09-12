@@ -1,0 +1,25 @@
+#!/bin/sh
+
+. /lib/bcm470x.sh
+
+bdname=$(bcm470x_board_name)
+
+led_set_attr() {
+	[ -f "/sys/class/leds/$1/$2" ] && echo "$3" > "/sys/class/leds/$1/$2"
+}
+
+rled_set_timer() {
+	led_set_attr $rled "brightness" "255"
+	led_set_attr $rled "trigger" "timer"
+	led_set_attr $rled "delay_on" "$1"
+	led_set_attr $rled "delay_off" "$2"
+}
+
+case "$bdname" in
+HC8961)
+	rled="bcm:green:system"
+	rled_set_timer 100 100
+	rled="bcm:green:internet"
+	rled_set_timer 100 100
+	;;
+esac

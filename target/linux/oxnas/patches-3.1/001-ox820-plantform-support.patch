@@ -1,0 +1,50 @@
+Index: linux-3.1.10/arch/arm/Kconfig
+===================================================================
+--- linux-3.1.10/arch/arm/Kconfig	(版本 9)
++++ linux-3.1.10/arch/arm/Kconfig	(版本 10)
+@@ -608,6 +608,15 @@
+ 	  This enables support for NVIDIA Tegra based systems (Tegra APX,
+ 	  Tegra 6xx and Tegra 2 series).
+ 
++config ARCH_OX820
++	bool "OX820"
++	select CPU_V6K
++	select GENERIC_CLOCKEVENTS
++	select ARM_GIC
++	select MIGHT_HAVE_PCI
++	help
++	 This enables support for the PLX OX820 based platforms
++
+ config ARCH_PNX4008
+ 	bool "Philips Nexperia PNX4008 Mobile"
+ 	select CPU_ARM926T
+@@ -1030,6 +1039,8 @@
+ 
+ source "arch/arm/mach-tegra/Kconfig"
+ 
++source "arch/arm/mach-ox820/Kconfig"
++
+ source "arch/arm/mach-u300/Kconfig"
+ 
+ source "arch/arm/mach-ux500/Kconfig"
+@@ -1386,7 +1397,7 @@
+ 	depends on REALVIEW_EB_ARM11MP || REALVIEW_EB_A9MP || \
+ 		 MACH_REALVIEW_PB11MP || MACH_REALVIEW_PBX || ARCH_OMAP4 || \
+ 		 ARCH_EXYNOS4 || ARCH_TEGRA || ARCH_U8500 || ARCH_VEXPRESS_CA9X4 || \
+-		 ARCH_MSM_SCORPIONMP || ARCH_SHMOBILE
++		 ARCH_MSM_SCORPIONMP || ARCH_SHMOBILE || ARCH_OX820
+ 	select USE_GENERIC_SMP_HELPERS
+ 	select HAVE_ARM_SCU if !ARCH_MSM_SCORPIONMP
+ 	help
+Index: linux-3.1.10/arch/arm/Makefile
+===================================================================
+--- linux-3.1.10/arch/arm/Makefile	(版本 9)
++++ linux-3.1.10/arch/arm/Makefile	(版本 10)
+@@ -167,6 +167,7 @@
+ machine-$(CONFIG_ARCH_OMAP3)		:= omap2
+ machine-$(CONFIG_ARCH_OMAP4)		:= omap2
+ machine-$(CONFIG_ARCH_ORION5X)		:= orion5x
++machine-$(CONFIG_ARCH_OX820)		:= ox820
+ machine-$(CONFIG_ARCH_PNX4008)		:= pnx4008
+ machine-$(CONFIG_ARCH_PRIMA2)		:= prima2
+ machine-$(CONFIG_ARCH_PXA)		:= pxa

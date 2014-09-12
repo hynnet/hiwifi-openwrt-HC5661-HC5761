@@ -1,0 +1,18 @@
+Source-Makefile: package/package-hiwifi/iozone/Makefile
+Package: iozone
+Version: 3_420-20140103.1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt +libpthread
+Menu-Depends: 
+Provides: 
+Section: opt
+Category: Utilities
+Title: Iozone Filesystem Benchmark
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iozone3_420.tar
+Type: ipkg
+Description: 	Iozone is Iozone Filesystem Benchmark
+http://www.iozone.org/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

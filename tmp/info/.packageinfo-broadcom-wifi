@@ -1,0 +1,19 @@
+Source-Makefile: package/broadcom-wifi/Makefile
+Package: kmod-broadcom-wifi
+Submenu: Wireless Drivers
+Version: <LINUX_VERSION>+6.30.163.42-1
+Depends: @TARGET_bcm470x||BROKEN +wlconf +wlu
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Kernel driver for BCM43xx chipsets
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  This package contains the proprietary wireless driver for the Broadcom 
+ BCM43xx chipset.
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

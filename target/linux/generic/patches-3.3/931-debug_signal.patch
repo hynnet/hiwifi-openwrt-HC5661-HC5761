@@ -1,0 +1,64 @@
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -45,6 +45,8 @@
+ static struct kmem_cache *sigqueue_cachep;
+ 
+ int print_fatal_signals __read_mostly;
++
++unsigned int sysctl_debug_signal __read_mostly = 0;
+ 
+ static void __user *sig_handler(struct task_struct *t, int sig)
+ {
+@@ -1048,6 +1050,18 @@
+ }
+ #endif
+ 
++static inline void print_signal_info(int sig, struct sigqueue *q, struct task_struct *t)
++{
++	if (unlikely(sysctl_debug_signal)) {
++		if (q->info.si_code == SI_USER)
++			printk(KERN_NOTICE "send sig %d from user pid %d %s to pid :%d %s\n",
++								sig, q->info.si_pid, current->comm, t->pid, t->comm);
++		else
++			printk(KERN_NOTICE "send sig %d from kernel to pid :%d %s\n",
++								sig, t->pid, t->comm);
++	}
++}
++
+ static int __send_signal(int sig, struct siginfo *info, struct task_struct *t,
+ 			int group, int from_ancestor_ns)
+ {
+@@ -1118,6 +1141,7 @@
+ 			break;
+ 		}
+ 
++		print_signal_info(sig, q, t);
+ 		userns_fixup_signal_uid(&q->info, t);
+ 
+ 	} else if (!is_si_special(info)) {
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -103,6 +103,7 @@
+ extern int compat_log;
+ extern int latencytop_enabled;
+ extern int sysctl_nr_open_min, sysctl_nr_open_max;
++extern unsigned int sysctl_debug_signal; 
+ #ifndef CONFIG_MMU
+ extern int sysctl_nr_trim_pages;
+ #endif
+@@ -1004,6 +1005,15 @@
+ 		.proc_handler	= proc_dointvec,
+ 	},
+ #endif
++	{
++		.procname	= "debug_signal",
++		.data		= &sysctl_debug_signal,
++		.maxlen		= sizeof (unsigned int),
++		.mode		= 0644,
++		.proc_handler	= proc_dointvec_minmax,
++		.extra1		= &zero,
++		.extra2		= &one,
++	},
+ 	{ }
+ };
+ 

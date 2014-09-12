@@ -1,0 +1,13 @@
+--- a/drivers/usb/storage/scsiglue.c
++++ b/drivers/usb/storage/scsiglue.c
+@@ -550,8 +550,8 @@
+ 	/* lots of sg segments can be handled */
+ 	.sg_tablesize =			SCSI_MAX_SG_CHAIN_SEGMENTS,
+ 
+-	/* limit the total size of a transfer to 120 KB */
+-	.max_sectors =                  240,
++	/* limit the total size of a transfer to 180 KB */
++	.max_sectors =                  360,
+ 
+ 	/* merge commands... this seems to help performance, but
+ 	 * periodically someone should test to see which setting is more

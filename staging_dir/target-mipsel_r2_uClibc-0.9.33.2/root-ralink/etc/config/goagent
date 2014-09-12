@@ -1,0 +1,5 @@
+config goagent 'goagent'
+	option enabled '0'
+	option listenip '192.168.199.1'
+	option listenport '8087'
+	option appid 'goagent'

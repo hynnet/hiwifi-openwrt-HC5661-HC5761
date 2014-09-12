@@ -1,0 +1,10 @@
+src-svn packages http://trac.hiwifi.tw/svn/hiwifi/openwrt-feeds/openwrt-packages
+src-svn xwrt http://trac.hiwifi.tw/svn/hiwifi/openwrt-feeds/xwrt-trunk
+src-svn luci http://trac.hiwifi.tw/svn/hiwifi/openwrt-feeds/luci/trunk/contrib/package
+#src-svn phone svn://svn.openwrt.org/openwrt/feeds/phone
+#src-svn efl svn://svn.openwrt.org/openwrt/feeds/efl
+#src-svn xorg svn://svn.openwrt.org/openwrt/feeds/xorg
+#src-svn desktop svn://svn.openwrt.org/openwrt/feeds/desktop
+#src-svn xfce svn://svn.openwrt.org/openwrt/feeds/xfce
+#src-svn lxde svn://svn.openwrt.org/openwrt/feeds/lxde
+#src-link custom /usr/src/openwrt/custom-feed

@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+# Copyright (C) 2012-2013 hiwifi.com
+#
+
+. /etc/functions.sh
+. /lib/ralink.sh
+. /lib/functions/uci-defaults.sh
+
+ralink_slave_lan_setup()
+{
+	local ifname=$1
+
+	uci batch <<EOF
+set network.lan='interface'
+set network.lan.ifname='$ifname'
+set network.lan.type='bridge'
+set network.lan.proto='dhcp'
+EOF
+}
+
+ralink_setup_interfaces()
+{
+	local board="$1"
+
+	ucidef_set_interface_loopback
+
+	case $board in
+	HB5981s)
+		ucidef_set_interface_wan "eth2.2"
+		ralink_slave_lan_setup "eth2.1"
+		;;
+	HB5811)
+		ralink_slave_lan_setup "eth2.1"
+		;;
+	*)
+		ucidef_set_interfaces_lan_wan "eth2.1" "eth2.2"
+		;;
+	esac
+}
+
+[ -e /etc/config/network ] && exit 0
+
+touch /etc/config/network
+
+board=$(tw_board_name)
+
+ralink_setup_interfaces $board
+
+uci commit network
+
+exit 0

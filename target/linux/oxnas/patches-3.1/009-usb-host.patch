@@ -1,0 +1,170 @@
+Index: linux-3.1.10/drivers/usb/host/Kconfig
+===================================================================
+--- linux-3.1.10/drivers/usb/host/Kconfig	(版本 15)
++++ linux-3.1.10/drivers/usb/host/Kconfig	(版本 16)
+@@ -208,6 +208,29 @@
+ 	  It is needed for high-speed (480Mbit/sec) USB 2.0 device
+ 	  support.
+ 
++config USB_EHCI_OXNAS
++	bool "OXNAS EHCI Module"
++	depends on USB_EHCI_HCD && ARCH_OX820
++	select USB_EHCI_ROOT_HUB_TT
++	---help---
++	  Enable support for the OX820 SOC's on-chip EHCI controller.
++
++if USB_EHCI_OXNAS
++config USB_OX820_FROM_PLLB
++    bool "OXNAS EHCI clocked by PLLB"
++    depends on USB_EHCI_OXNAS
++    ---help---
++      Switch clock generation of USB to PLLB
++      
++config USB_OX820_PHYA_IS_HOST
++    bool "OXNAS EHCI: PHY A is host"
++    depends on USB_EHCI_OXNAS
++    ---help---
++      Initialize USB PHY A as host.
++      Devices: Medion NAS
++      
++endif
++
+ config USB_EHCI_ATH79
+ 	bool "EHCI support for AR7XXX/AR9XXX SoCs"
+ 	depends on USB_EHCI_HCD && (SOC_AR71XX || SOC_AR724X || SOC_AR913X)
+Index: linux-3.1.10/drivers/usb/host/ehci-hcd.c
+===================================================================
+--- linux-3.1.10/drivers/usb/host/ehci-hcd.c	(版本 15)
++++ linux-3.1.10/drivers/usb/host/ehci-hcd.c	(版本 16)
+@@ -48,6 +48,10 @@
+ #include <asm/system.h>
+ #include <asm/unaligned.h>
+ 
++#if defined(CONFIG_USB_EHCI_OXNAS)
++#include <mach/ehci-oxnas.h>
++#endif
++
+ /*-------------------------------------------------------------------------*/
+ 
+ /*
+@@ -262,6 +266,23 @@
+ 	if (ehci_big_endian_mmio(ehci))
+ 		tmp |= USBMODE_BE;
+ 	ehci_writel(ehci, tmp, reg_ptr);
++	
++#if defined(CONFIG_USB_EHCI_OXNAS)
++	{
++		struct oxnas_ehci_regs* ox_ehci_regs = (struct oxnas_ehci_regs*)ehci->regs;
++		reg_ptr = (u32 __iomem *)&ox_ehci_regs->txfilltuning;
++		tmp = ehci_readl(ehci, reg_ptr);
++		tmp &= ~0x00ff0000;
++		tmp |= 0x003f0000; /* set burst pre load count to 0x40 (63 * 4 bytes)  */
++		tmp |= 0x16; /* set sheduler overhead to 22 * 1.267us (HS) or 22 * 6.33us (FS/LS)*/
++		ehci_writel(ehci, tmp, reg_ptr);
++
++		reg_ptr = (u32 __iomem *)&ox_ehci_regs->txttfilltuning;
++		tmp = readl (reg_ptr);
++		tmp |= 0x2; /* set sheduler overhead to 2 * 6.333us */
++		writel (tmp, reg_ptr);
++	}
++#endif // CONFIG_ARCH_OX820
+ }
+ 
+ /* reset a non-running (STS_HALT == 1) controller */
+@@ -1204,10 +1225,17 @@
+ MODULE_AUTHOR (DRIVER_AUTHOR);
+ MODULE_LICENSE ("GPL");
+ 
++#ifdef CONFIG_USB_EHCI_OXNAS
++#include "ehci-oxnas.c"
++#define PLATFORM_DRIVER		ehci_oxnas_driver
++#endif
++
++#ifndef CONFIG_USB_EHCI_OXNAS
+ #ifdef CONFIG_PCI
+ #include "ehci-pci.c"
+ #define	PCI_DRIVER		ehci_pci_driver
+ #endif
++#endif
+ 
+ #ifdef CONFIG_USB_EHCI_FSL
+ #include "ehci-fsl.c"
+@@ -1358,11 +1386,13 @@
+ 		goto clean0;
+ #endif
+ 
++#ifndef CONFIG_USB_EHCI_OXNAS
+ #ifdef PCI_DRIVER
+ 	retval = pci_register_driver(&PCI_DRIVER);
+ 	if (retval < 0)
+ 		goto clean1;
+ #endif
++#endif
+ 
+ #ifdef PS3_SYSTEM_BUS_DRIVER
+ 	retval = ps3_ehci_driver_register(&PS3_SYSTEM_BUS_DRIVER);
+@@ -1395,10 +1425,12 @@
+ 	ps3_ehci_driver_unregister(&PS3_SYSTEM_BUS_DRIVER);
+ clean2:
+ #endif
++#ifndef CONFIG_USB_EHCI_OXNAS
+ #ifdef PCI_DRIVER
+ 	pci_unregister_driver(&PCI_DRIVER);
+ clean1:
+ #endif
++#endif
+ #ifdef PLATFORM_DRIVER
+ 	platform_driver_unregister(&PLATFORM_DRIVER);
+ clean0:
+@@ -1424,9 +1456,11 @@
+ #ifdef PLATFORM_DRIVER
+ 	platform_driver_unregister(&PLATFORM_DRIVER);
+ #endif
++#ifndef CONFIG_USB_EHCI_OXNAS
+ #ifdef PCI_DRIVER
+ 	pci_unregister_driver(&PCI_DRIVER);
+ #endif
++#endif
+ #ifdef PS3_SYSTEM_BUS_DRIVER
+ 	ps3_ehci_driver_unregister(&PS3_SYSTEM_BUS_DRIVER);
+ #endif
+Index: linux-3.1.10/drivers/usb/host/ehci-q.c
+===================================================================
+--- linux-3.1.10/drivers/usb/host/ehci-q.c	(版本 15)
++++ linux-3.1.10/drivers/usb/host/ehci-q.c	(版本 16)
+@@ -186,6 +186,17 @@
+ 			/* REVISIT ARC-derived cores don't clear the root
+ 			 * hub TT buffer in this way...
+ 			 */
++#if defined(CONFIG_USB_EHCI_OXNAS)
++			struct oxnas_ehci_regs* ox_ehci_regs = (struct oxnas_ehci_regs*)ehci->regs;
++#ifdef DEBUG
++			struct usb_device *tt = urb->dev->tt->hub;
++			dev_dbg(&tt->dev,
++				"clear tt in root hub \n");
++#endif /* DEBUG */
++			if (ox_ehci_regs->ttctrl & OXNAS_TT_CONTROL_TTAS){
++				ox_ehci_regs->ttctrl |= OXNAS_TT_CONTROL_TTAC;
++			}
++#endif
+ 		}
+ 	}
+ }
+@@ -1223,6 +1234,17 @@
+ 		return;
+ 	}
+ 
++
++#if defined(CONFIG_USB_EHCI_OXNAS)
++	{
++		struct oxnas_ehci_regs* ox_ehci_regs = (struct oxnas_ehci_regs*)ehci->regs;
++		/* local TT in use for this qh ? */ 
++		if (qh->hw->hw_info2 == 0 && ox_ehci_regs->ttctrl & OXNAS_TT_CONTROL_TTAS) {
++			ox_ehci_regs->ttctrl |= OXNAS_TT_CONTROL_TTAC;
++		}
++	}
++#endif
++	
+ 	qh->qh_state = QH_STATE_UNLINK;
+ 	ehci->reclaim = qh = qh_get (qh);
+ 

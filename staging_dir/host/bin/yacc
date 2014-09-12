@@ -1,0 +1,3 @@
+#! /bin/sh
+test -n "$STAGING_DIR" && exec "$STAGING_DIR/../host/bin/bison" -y "$@"
+exec '/home/hiwifi/hc5761/staging_dir/host/bin/bison' -y "$@"

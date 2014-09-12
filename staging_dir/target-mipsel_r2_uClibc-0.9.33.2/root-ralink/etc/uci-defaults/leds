@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# Copyright (C) 2012-2013 hiwifi.com
+#
+
+. /lib/functions/uci-defaults.sh
+. /lib/ralink.sh
+
+board=$(tw_board_name)
+
+case $board in
+*)
+	ucidef_set_led_default "inet" "INET" "HC5761:green:internet" "0"
+	ucidef_set_led_wlan "wlan" "WLAN" "HC5761:green:wlan-2p4" "wifi0tpt"
+	ucidef_set_led_wlan "wlan5g" "WLAN5G" "HC5761:green:wlan-5p" "wifi1tpt"
+	;;	
+esac
+
+ucidef_commit_leds
+
+exit 0

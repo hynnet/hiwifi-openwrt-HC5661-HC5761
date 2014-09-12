@@ -1,0 +1,40 @@
+pppd: When we get the PADO/PADS not for us, do not reset the timeout
+
+Fix the bug that if the PPPoE server does not exsit and some PPPoE 
+client sent PADI frequently, the waiting loop will become endless.
+
+Signed-off-by: Duke Wu <duke.wu@hiwifi.tw>
+
+--- a/pppd/plugins/rp-pppoe/discovery.c
++++ b/pppd/plugins/rp-pppoe/discovery.c
+@@ -291,11 +291,11 @@ waitForPADO(PPPoEConnection *conn, int t
+     pc.seenServiceName = 0;
+     conn->error = 0;
+ 
++    tv.tv_sec = timeout;
++    tv.tv_usec = 0;
++
+     do {
+ 	if (BPF_BUFFER_IS_EMPTY) {
+-	    tv.tv_sec = timeout;
+-	    tv.tv_usec = 0;
+-
+ 	    FD_ZERO(&readable);
+ 	    FD_SET(conn->discoverySocket, &readable);
+ 
+@@ -453,12 +453,12 @@ waitForPADS(PPPoEConnection *conn, int t
+     PPPoEPacket packet;
+     int len;
+ 
++    tv.tv_sec = timeout;
++    tv.tv_usec = 0;
++
+     conn->error = 0;
+     do {
+ 	if (BPF_BUFFER_IS_EMPTY) {
+-	    tv.tv_sec = timeout;
+-	    tv.tv_usec = 0;
+-
+ 	    FD_ZERO(&readable);
+ 	    FD_SET(conn->discoverySocket, &readable);
+ 

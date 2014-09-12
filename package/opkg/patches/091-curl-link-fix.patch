@@ -1,0 +1,32 @@
+diff -ur a/libopkg/Makefile.am b/libopkg/Makefile.am
+--- a/libopkg/Makefile.am	2013-02-26 14:08:27.324835120 +0800
++++ b/libopkg/Makefile.am	2013-02-26 14:25:33.268616357 +0800
+@@ -44,4 +44,4 @@
+ 	$(opkg_cmd_sources) $(opkg_db_sources) \
+ 	$(opkg_util_sources) $(opkg_list_sources)
+ 
+-libopkg_a_LIBADD = $(top_builddir)/libbb/libbb.a $(CURL_LIBS) $(GPGME_LIBS) $(OPENSSL_LIBS) $(PATHFINDER_LIBS)
++libopkg_a_LIBADD = $(top_builddir)/libbb/libbb.a
+diff -ur a/src/Makefile.am b/src/Makefile.am
+--- a/src/Makefile.am	2013-02-26 14:08:27.325835411 +0800
++++ b/src/Makefile.am	2013-02-26 14:25:31.804618332 +0800
+@@ -3,4 +3,5 @@
+ 
+ opkg_cl_SOURCES = opkg-cl.c
+ opkg_cl_LDADD = $(top_builddir)/libopkg/libopkg.a \
+-                $(top_builddir)/libbb/libbb.a
++                $(top_builddir)/libbb/libbb.a \
++                $(CURL_LIBS) $(GPGME_LIBS) $(OPENSSL_LIBS) $(PATHFINDER_LIBS)
+diff -ur a/tests/Makefile.am b/tests/Makefile.am
+--- a/tests/Makefile.am	2013-02-26 14:08:27.325835411 +0800
++++ b/tests/Makefile.am	2013-02-26 14:25:32.424679243 +0800
+@@ -16,7 +16,8 @@
+ #opkg_active_list_test_SOURCES = opkg_active_list_test.c
+ #opkg_active_list_test_CFLAGS = $(ALL_CFLAGS) -I$(top_srcdir)
+ 
+-libopkg_test_LDADD = $(top_builddir)/libopkg/libopkg.a $(top_builddir)/libbb/libbb.a
++libopkg_test_LDADD = $(top_builddir)/libopkg/libopkg.a $(top_builddir)/libbb/libbb.a \
++                     $(CURL_LIBS) $(GPGME_LIBS) $(OPENSSL_LIBS) $(PATHFINDER_LIBS)
+ libopkg_test_SOURCE = libopkg_test.c
+ libopkg_test_LDFLAGS = -static
+ 

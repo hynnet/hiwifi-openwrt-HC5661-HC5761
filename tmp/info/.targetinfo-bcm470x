@@ -1,0 +1,70 @@
+Source-Makefile: target/linux/bcm470x/Makefile
+Target: bcm470x
+Target-Board: bcm470x
+Target-Name: Broadcom BCM4707/BCM47081/BCM4708
+Target-Path: /home/hiwifi/hc5761/platform
+Target-Arch: arm
+Target-Arch-Packages: bcm470x
+Target-Features: arm_v7 gpio pci squashfs usb
+Target-Depends: 
+Target-Optimization: -Os -pipe -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -msoft-float -mfloat-abi=soft -Wno-error=unused-but-set-variable -Wno-error=unused-but-set-parameter
+Linux-Version: 3.3.8
+Linux-Release: 1
+Linux-Kernel-Arch: arm
+Target-Description:
+	Build firmware images for Broadcom BCM4707/47081/4708 based boards
+@@
+Default-Packages: base-files libc libgcc busybox dropbear mtd uci opkg hotplug2 netifd dnsmasq iptables ppp ppp-mod-pppoe kmod-ipt-nathelper firewall
+Target: bcm470x/generic
+Target-Board: bcm470x
+Target-Name: Generic
+Target-Path: target/linux/bcm470x
+Target-Arch: arm
+Target-Arch-Packages: bcm470x
+Target-Features: arm_v7 gpio pci squashfs usb
+Target-Depends: 
+Target-Optimization: -Os -pipe -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -msoft-float -mfloat-abi=soft -Wno-error=unused-but-set-variable -Wno-error=unused-but-set-parameter
+Linux-Version: 3.3.8
+Linux-Release: 1
+Linux-Kernel-Arch: arm
+Target-Description:
+	Build firmware images for Broadcom BCM4707/47081/4708 based boards
+@@
+Default-Packages: base-files libc libgcc busybox dropbear mtd uci opkg hotplug2 netifd dnsmasq iptables ppp ppp-mod-pppoe kmod-ipt-nathelper firewall
+Target-Profile: HC8961
+Target-Profile-Name: Hiwifi Wireless HC8961 Board
+Target-Profile-Packages: e2fsprogs			
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+
+@@
+
+Target: bcm470x/smp
+Target-Board: bcm470x
+Target-Name: SMP
+Target-Path: target/linux/bcm470x
+Target-Arch: arm
+Target-Arch-Packages: bcm470x
+Target-Features: arm_v7 gpio pci squashfs usb
+Target-Depends: 
+Target-Optimization: -Os -pipe -march=armv7-a -mcpu=cortex-a9 -mtune=cortex-a9 -msoft-float -mfloat-abi=soft -Wno-error=unused-but-set-variable -Wno-error=unused-but-set-parameter
+Linux-Version: 3.3.8
+Linux-Release: 1
+Linux-Kernel-Arch: arm
+Target-Description:
+	Build firmware images for Broadcom BCM4707/47081/4708 based boards
+@@
+Default-Packages: base-files libc libgcc busybox dropbear mtd uci opkg hotplug2 netifd dnsmasq iptables ppp ppp-mod-pppoe kmod-ipt-nathelper firewall
+Target-Profile: HC8961
+Target-Profile-Name: Hiwifi Wireless HC8961 Board
+Target-Profile-Packages: e2fsprogs
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+
+@@
+
+

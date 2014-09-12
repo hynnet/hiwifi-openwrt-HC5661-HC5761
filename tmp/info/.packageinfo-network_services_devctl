@@ -1,0 +1,34 @@
+Source-Makefile: package/network/services/devctl/Makefile
+Package: devctl
+Version: 1.0.2-5
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libbdinfo
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: device control tool
+Maintainer: Abu Cheng <abu.zheng@hiwifi.tw>
+Source: 
+Type: ipkg
+Description: 	device control tool.
+http://www.hiwifi.com
+Abu Cheng <abu.zheng@hiwifi.tw>
+@@
+
+Package: devctld
+Version: 1.0.2-5
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: device control deamon
+Maintainer: Abu Cheng <abu.zheng@hiwifi.tw>
+Source: 
+Type: ipkg
+Description: 	device control deamon.
+http://www.hiwifi.com
+Abu Cheng <abu.zheng@hiwifi.tw>
+@@
+
+

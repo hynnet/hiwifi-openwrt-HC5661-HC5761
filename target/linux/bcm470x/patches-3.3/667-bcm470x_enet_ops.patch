@@ -1,0 +1,11 @@
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -905,6 +905,8 @@
+  *	Must return >0 or -errno if it changed dev->features itself.
+  *
+  */
++#define HAVE_NET_DEVICE_OPS
++
+ struct net_device_ops {
+ 	int			(*ndo_init)(struct net_device *dev);
+ 	void			(*ndo_uninit)(struct net_device *dev);

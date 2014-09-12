@@ -1,0 +1,51 @@
+#!/bin/sh /etc/rc.common
+
+START=98
+NAME=upnpaudioplayer
+
+PID_FILE=/var/run/${NAME}.pid
+
+replaceXMLTag()
+{
+	local tagName="$1"
+	local newValue="$2"
+	local fileName="$3"
+
+	sed "s#<${tagName}>.*#<${tagName}>${newValue}</${tagName}>#" ${fileName} > ${fileName}.tmp
+	mv ${fileName}.tmp ${fileName}
+}
+
+handle_upnpaudioplayer() {
+	local config="$1"
+
+	config_get bname "$1" bname "UPNPAudioPlayer"
+
+	mac=`ifconfig | awk '/HWaddr/{ print $5;exit }' | sed 's/://g'`
+
+	# set the friendly name
+	replaceXMLTag "friendlyName" "$bname" "/usr/data/MediaRenderer.xml"
+	# set a UUID
+	replaceXMLTag "UDN" "e6572b54-f3c7-2d91-2fb5-"$mac "/usr/data/MediaRenderer.xml" "/usr/data/MediaRenderer.xml"
+
+	export AUDIOPLAYER_DATA="/usr/data"
+	start-stop-daemon -Sqbm -x "/usr/bin/${NAME}" -p ${PID_FILE}
+}
+
+start() {
+	local enabled
+
+	config_load upnpaudioplayer
+	config_get enabled config enabled 0
+	[ $enabled -eq 0 ] && {
+		return 0
+	}
+	config_foreach handle_upnpaudioplayer upnpaudioplayer
+}
+
+stop() {
+	if [ -f ${PID_FILE} ]; then
+		start-stop-daemon -Kq -p ${PID_FILE}
+		kill -9 `cat ${PID_FILE}` >/dev/null 2>&1
+		rm -f ${PID_FILE}
+	fi
+}

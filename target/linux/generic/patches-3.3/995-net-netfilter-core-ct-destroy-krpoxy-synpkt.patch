@@ -1,0 +1,34 @@
+--- a/net/netfilter/nf_conntrack_core.c	2014-05-19 15:49:24.449750316 +0800
++++ b/net/netfilter/nf_conntrack_core.c	2014-05-19 16:26:14.188657079 +0800
+@@ -313,11 +313,31 @@ void nf_ct_insert_dying_list(struct nf_c
+ }
+ EXPORT_SYMBOL_GPL(nf_ct_insert_dying_list);
+ 
++#ifndef NO_HIWIFI_EXT
++static inline void destroy_syn_skb(struct nf_conn *ct)
++{
++       struct sk_buff **skb;
++
++       if (ct)
++       {
++               skb = (struct sk_buff **)(ct->hwf_ext);
++               if (*skb) {
++                       kfree_skb(*skb);
++                       *skb = NULL;
++               }
++       }
++}
++#endif
++
+ static void death_by_timeout(unsigned long ul_conntrack)
+ {
+ 	struct nf_conn *ct = (void *)ul_conntrack;
+ 	struct nf_conn_tstamp *tstamp;
+ 
++#ifndef NO_HIWIFI_EXT
++	destroy_syn_skb(ct);
++#endif
++
+ 	tstamp = nf_conn_tstamp_find(ct);
+ 	if (tstamp && tstamp->stop == 0)
+ 		tstamp->stop = ktime_to_ns(ktime_get_real());

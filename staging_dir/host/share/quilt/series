@@ -1,0 +1,88 @@
+#! /bin/bash
+
+#  This script is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2 as
+#  published by the Free Software Foundation.
+#
+#  See the COPYING and AUTHORS files for more details.
+
+# Read in library functions
+if [ "$(type -t patch_file_name)" != function ]
+then
+	if ! [ -r $QUILT_DIR/scripts/patchfns ]
+	then
+		echo "Cannot read library $QUILT_DIR/scripts/patchfns" >&2
+		exit 1
+	fi
+	. $QUILT_DIR/scripts/patchfns
+fi
+
+usage()
+{
+	printf $"Usage: quilt series [-v]\n"
+	if [ x$1 = x-h ]
+	then
+		printf $"
+Print the names of all patches in the series file.
+
+-v	Verbose, more user friendly output.
+"
+		exit 0
+	else
+		exit 1
+	fi
+}
+
+cat_patches()
+{
+	local prefix=$1
+	shift
+	local patch
+
+	for patch in "$@"
+	do
+		echo "$prefix$(print_patch "$patch")"
+	done
+}
+
+options=`getopt -o vh -- "$@"`
+
+if [ $? -ne 0 ]
+then
+	usage
+fi
+
+eval set -- "$options"
+
+while true
+do
+	case "$1" in
+	-v)
+		opt_verbose=1
+		shift ;;
+	-h)
+		usage -h ;;
+	--)
+		shift
+		break ;;
+	esac
+done
+
+if [ $# -ne 0 ]
+then
+	usage
+fi
+
+if [ -n "$opt_verbose" ]
+then
+	top=$(top_patch)
+	cat_patches "+ " $(patches_before $top)
+	[ -n "$top" ] && cat_patches "= " $top
+	cat_patches "  " $(patches_after $top)
+else
+	cat_patches "" $(cat_series)
+fi
+### Local Variables:
+### mode: shell-script
+### End:
+# vim:filetype=sh

@@ -1,0 +1,42 @@
+--- a/arch/arm/kernel/bios32.c
++++ b/arch/arm/kernel/bios32.c
+@@ -316,6 +316,10 @@
+ 	}
+ }
+ 
++#ifdef CONFIG_PLAT_BCM5301X
++extern bool plat_fixup_bus(struct pci_bus *b);
++#endif
++
+ /*
+  * pcibios_fixup_bus - Called after each bus is probed,
+  * but before its children are examined.
+@@ -325,6 +329,11 @@
+ 	struct pci_sys_data *root = bus->sysdata;
+ 	struct pci_dev *dev;
+ 	u16 features = PCI_COMMAND_SERR | PCI_COMMAND_PARITY | PCI_COMMAND_FAST_BACK;
++
++#ifdef CONFIG_PLAT_BCM5301X
++	if (plat_fixup_bus(bus))
++		return;
++#endif
+ 
+ 	/*
+ 	 * Walk the devices on this bus, working out what we can
+@@ -607,6 +616,8 @@
+ 	return start;
+ }
+ 
++#ifndef CONFIG_PLAT_BCM5301X
++
+ /**
+  * pcibios_enable_device - Enable I/O and memory.
+  * @dev: PCI device to be enabled
+@@ -649,6 +660,7 @@
+ 	}
+ 	return 0;
+ }
++#endif
+ 
+ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+ 			enum pci_mmap_state mmap_state, int write_combine)

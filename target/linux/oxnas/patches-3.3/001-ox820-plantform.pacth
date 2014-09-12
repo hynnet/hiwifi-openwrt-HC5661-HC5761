@@ -1,0 +1,39 @@
+diff -Nru linux-3.1.10/arch/arm/Kconfig OX820-3.1-Linux/arch/arm/Kconfig
+--- linux-3.1.10/arch/arm/Kconfig	2012-01-18 23:33:18.000000000 +0800
++++ OX820-3.1-Linux/arch/arm/Kconfig	2013-06-03 15:07:54.143823229 +0800
+@@ -608,6 +608,15 @@
+ 	  This enables support for NVIDIA Tegra based systems (Tegra APX,
+ 	  Tegra 6xx and Tegra 2 series).
+ 
++config ARCH_OX820
++	bool "OX820"
++	select CPU_V6K
++	select GENERIC_CLOCKEVENTS
++	select ARM_GIC
++	select MIGHT_HAVE_PCI
++	help
++	 This enables support for the PLX OX820 based platforms
++
+ config ARCH_PNX4008
+ 	bool "Philips Nexperia PNX4008 Mobile"
+ 	select CPU_ARM926T
+@@ -1030,6 +1039,8 @@
+ 
+ source "arch/arm/mach-tegra/Kconfig"
+ 
++source "arch/arm/mach-ox820/Kconfig"
++
+ source "arch/arm/mach-u300/Kconfig"
+ 
+ source "arch/arm/mach-ux500/Kconfig"
+
+--- linux-3.3.8/arch/arm/Makefile.orig	2012-06-01 15:16:13.000000000 +0800
++++ linux-3.3.8/arch/arm/Makefile	2013-06-03 22:23:17.108766645 +0800
+@@ -176,6 +176,7 @@
+ machine-$(CONFIG_ARCH_RPC)		:= rpc
+ machine-$(CONFIG_ARCH_S3C2410)		:= s3c2410 s3c2412 s3c2416 s3c2440 s3c2443
+ machine-$(CONFIG_ARCH_S3C64XX)		:= s3c64xx
++machine-$(CONFIG_ARCH_OX820)		:= ox820
+ machine-$(CONFIG_ARCH_S5P64X0)		:= s5p64x0
+ machine-$(CONFIG_ARCH_S5PC100)		:= s5pc100
+ machine-$(CONFIG_ARCH_S5PV210)		:= s5pv210

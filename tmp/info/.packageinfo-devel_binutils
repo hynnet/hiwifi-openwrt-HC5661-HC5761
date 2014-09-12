@@ -1,0 +1,32 @@
+Source-Makefile: package/devel/binutils/Makefile
+Package: binutils
+Version: 5
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +objdump
+Menu-Depends: 
+Provides: 
+Section: devel
+Category: Development
+Title: binutils
+Maintainer: Felix Fietkau <nbd@openwrt.org>
+Source: binutils-.tar.bz2
+Type: ipkg
+Description:   The Binutils package contains a linker, an assembler, and other tools for handling object files
+Felix Fietkau <nbd@openwrt.org>
+@@
+
+Package: objdump
+Version: 5
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +zlib
+Menu-Depends: 
+Provides: 
+Section: devel
+Category: Development
+Title: objdump
+Maintainer: Felix Fietkau <nbd@openwrt.org>
+Source: binutils-.tar.bz2
+Type: ipkg
+Description: objdump
+Felix Fietkau <nbd@openwrt.org>
+@@
+
+

@@ -1,0 +1,6 @@
+DISTRIB_ID="OpenWrt"
+DISTRIB_RELEASE="Bleeding Edge"
+DISTRIB_REVISION="r4061"
+DISTRIB_CODENAME="barrier_breaker"
+DISTRIB_TARGET="ralink/mt7620"
+DISTRIB_DESCRIPTION="OpenWrt Barrier Breaker r4061"

@@ -1,0 +1,373 @@
+#! /bin/bash
+
+#  This script is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2 as
+#  published by the Free Software Foundation.
+#
+#  See the COPYING and AUTHORS files for more details.
+
+# Read in library functions
+if [ "$(type -t patch_file_name)" != function ]
+then
+	if ! [ -r $QUILT_DIR/scripts/patchfns ]
+	then
+		echo "Cannot read library $QUILT_DIR/scripts/patchfns" >&2
+		exit 1
+	fi
+	. $QUILT_DIR/scripts/patchfns
+fi
+
+setup_colors
+
+usage()
+{
+	printf $"Usage: quilt push [-afqv] [--leave-rejects] [--color[=always|auto|never]] [num|patch]\n"
+	if [ x$1 = x-h ]
+	then
+		printf $"
+Apply patch(es) from the series file.  Without options, the next patch
+in the series file is applied.  When a number is specified, apply the
+specified number of patches.  When a patch name is specified, apply
+all patches up to and including the specified patch.  Patch names may
+include the patches/ prefix, which means that filename completion can
+be used.
+
+-a	Apply all patches in the series file.
+
+-q	Quiet operation.
+
+-f	Force apply, even if the patch has rejects. Unless in quiet mode,
+	apply the patch interactively: the patch utility may ask questions.
+
+-v	Verbose operation.
+
+--leave-rejects
+	Leave around the reject files patch produced, even if the patch
+	is not actually applied.
+
+--color[=always|auto|never]
+	Use syntax coloring.
+"
+		exit 0
+	else
+		exit 1
+	fi
+}
+
+interrupt()
+{
+	rollback_patch $1
+	printf $"Interrupted by user; patch %s was not applied.\n" \
+	       "$(print_patch $patch)" >&2
+	exit 1
+}
+
+colorize()
+{
+	if [ -n "$opt_color" ]; then
+		awk '
+		{ if (/FAILED|hunks? ignored|can'\''t find file|file .* already exists/)
+		    print "'$color_patch_fail'" $0 "'$color_clear'"
+		  else if (/is already applied$/)
+		    print "'$color_patch_applied'" $0 "'$color_clear'"
+		  else if (/^Hunk/) {
+		    sub(/^Hunk .* with fuzz [0-9]*/,
+			"'$color_patch_fuzz'&'$color_clear'")
+		    sub(/offset -?[0-9]* lines?/,
+			"'$color_patch_offs'&'$color_clear'")
+		    print
+		  } else
+		    print
+		}'
+	else
+		cat
+	fi
+}
+
+push_patch_args()
+{
+	local patch=$1
+
+	if [ -z "$opt_reverse" ]
+	then
+		patch_args "$patch"
+	else
+		set -- $(patch_args "$patch")
+		if [ "${*#-R}" != "$*" ]
+		then
+			echo "${*#-R}"
+		else
+			echo "$*" -R
+		fi
+	fi
+}
+
+apply_patch()
+{
+	local patch=$1 patch_file=$2
+	local output
+
+	[ -s $patch_file ] || return 0
+
+	if [ "${patch_file:(-3)}" = ".gz" ]
+	then
+		gzip -cd $patch_file \
+		| patch $QUILT_PATCH_OPTS $(push_patch_args $patch) \
+			--backup --prefix="$QUILT_PC/$patch/" \
+			$no_reject_files \
+			-E $silent $force_apply 2>&1
+	elif [ "${patch_file:(-4)}" = ".bz2" ]
+	then
+		bzip2 -cd $patch_file \
+		| patch $QUILT_PATCH_OPTS $(push_patch_args $patch) \
+			--backup --prefix="$QUILT_PC/$patch/" \
+			$no_reject_files \
+			-E $silent $force_apply 2>&1
+	else
+		patch $QUILT_PATCH_OPTS $(push_patch_args $patch) \
+		      --backup --prefix="$QUILT_PC/$patch/" \
+		      $no_reject_files \
+		      -E $silent $force_apply -i $patch_file 2>&1
+	fi
+}
+
+rollback_patch()
+{
+	local patch=$1
+
+	$QUILT_LIB/backup-files $silent_unless_verbose -r -B $QUILT_PC/$patch/ -
+}
+
+cleanup_patch_output() {
+	if [ -z "$opt_leave_rejects" ]
+	then
+		if [ -n "$opt_quiet" ]; then
+			# In this case, patch does not allow us to find out
+			# which file contains the rejects; it only tells us
+			# which reject file is used. We use a single temporary
+			# reject file, so this does not help us.
+
+			awk '
+			{ gsub(/ -- saving rejects to (file )?.*/, "") }
+			{ print }
+			'
+		else
+			awk '
+			/^patching file / { filename = substr($0, 15) }
+			{ gsub(/ -- saving rejects to (file )?.*/,
+			       " -- rejects in file " filename) }
+			{ print }
+			'
+		fi
+	else
+		cat
+	fi
+}
+
+add_patch()
+{
+	local patch=$1
+	local patch_file=$(patch_file_name $patch)
+	local file status tmp
+
+	printf $"Applying patch %s\n" "$(print_patch $patch)"
+	trap "interrupt $patch" SIGINT
+
+	no_reject_files=
+	if [ -z "$opt_leave_rejects" ]; then
+		tmp="$(gen_tempfile)"
+		no_reject_files="-r $tmp"
+	fi
+
+	apply_patch $patch "$patch_file"
+	status=$?
+	trap "" SIGINT
+
+	[ -n "$tmp" ] && rm -f $tmp
+
+	if [ $status -eq 0 -o -n "$opt_force" ]
+	then
+		add_to_db $patch
+		if [ $status -eq 0 ]
+		then
+			rm -f $QUILT_PC/$patch~refresh
+		else
+			touch $QUILT_PC/$patch~refresh
+		fi
+
+		if [ -e "$QUILT_PC/$patch" ]
+		then
+			touch $QUILT_PC/$patch/.timestamp
+		else
+			mkdir "$QUILT_PC/$patch"
+		fi
+
+		if ! [ -e $patch_file ]
+		then
+			printf $"Patch %s does not exist; applied empty patch\n" \
+			       "$(print_patch $patch)"
+		elif [ -z "$(shopt -s nullglob ; echo "$QUILT_PC/$patch/"*)" ]
+		then
+			printf $"Patch %s appears to be empty; applied\n" \
+			       "$(print_patch $patch)"
+		elif [ $status -ne 0 ]
+		then
+			printf $"Applied patch %s (forced; needs refresh)\n" \
+			       "$(print_patch $patch)"
+		fi
+	else
+		rollback_patch $patch
+		tmp="$(gen_tempfile)"
+		no_reject_files="-r $tmp"
+		opt_reverse=1
+		if apply_patch $patch "$patch_file" > /dev/null 2> /dev/null
+		then
+			printf $"Patch %s can be reverse-applied\n" \
+			       "$(print_patch "$patch")"
+		else
+			printf $"Patch %s does not apply (enforce with -f)\n" \
+			       "$(print_patch $patch)"
+		fi
+		rollback_patch $patch
+		rm -f $tmp
+		status=1
+	fi
+	trap - SIGINT
+	return $status
+}
+
+list_patches()
+{
+	local top=$(top_patch) n=0 patch
+	if [ -n "$top" ]
+	then
+		patches_after $top
+	else
+		cat_series
+	fi \
+	| if [ -n "$opt_all" ]
+	then
+		cat
+	else
+		while read patch
+		do
+			if [ -n "$number" ]
+			then
+				if [ $n -eq $number ]
+				then
+					break
+				fi
+				n=$[$n+1]
+			fi
+			echo "$patch"
+			if [ -z "$number" -a "$patch" = "$stop_at_patch" ]
+			then
+				break
+			fi
+		done
+	fi
+}
+
+options=`getopt -o fqvah --long leave-rejects,color:: -- "$@"`
+
+if [ $? -ne 0 ]
+then
+        usage
+fi
+
+eval set -- "$options"
+
+while true
+do
+        case "$1" in
+        -f)
+                opt_force=1
+		shift ;;
+        -q)
+                opt_quiet=1
+		shift ;;
+	-v)
+		opt_verbose=1
+		shift ;;
+	-a)
+		opt_all=1
+		shift ;;
+	-h)
+		usage -h ;;
+	--leave-rejects)
+		opt_leave_rejects=1
+		shift ;;
+	--color)
+		case "$2" in
+		"" | always)
+			opt_color=1 ;;
+		auto | tty)
+			opt_color=
+			[ -t 1 ] && opt_color=1 ;;
+		never)
+			opt_color= ;;
+		*)
+			usage ;;
+		esac
+		shift 2 ;;
+        --)
+                shift
+		break ;;
+        esac
+done
+
+if [ $# -gt 1 -o \( -n "$opt_all" -a $# -ne 0 \) ]
+then
+        usage
+fi
+
+if [ $# -eq 1 ]
+then
+	if is_numeric $1
+	then
+		number=$1
+	else
+		stop_at_patch="$1"
+	fi
+else
+	[ -z "$opt_all" ] && number=1
+fi
+
+stop_at_patch=$(find_unapplied_patch "$stop_at_patch") || exit 1
+
+[ -n "$opt_quiet" ] && silent=-s
+[ -z "$opt_verbose" ] && silent_unless_verbose=-s
+[ -z "$opt_force" -o -n "$opt_quiet" ] && force_apply=-f
+[ -n "$opt_force" ] && opt_leave_rejects=1
+
+top=$(top_patch)
+if [ -n "$top" -a -e $QUILT_PC/$top~refresh ]
+then
+	printf $"The topmost patch %s needs to be refreshed first.\n" \
+	       "$(print_patch $top)"
+	exit 1
+fi
+
+patches=$(list_patches)
+create_db
+for patch in $patches
+do
+	if ! add_patch $patch
+	then
+		exit 1
+	fi
+	[ -n "$opt_quiet" ] || echo
+done \
+| cleanup_patch_output \
+| colorize
+
+if [ ${PIPESTATUS[0]} -eq 0 ]; then
+	set -- $patches
+	printf $"Now at patch %s\n" "$(print_patch ${!#})"
+else
+	exit 1
+fi
+### Local Variables:
+### mode: shell-script
+### End:
+# vim:filetype=sh

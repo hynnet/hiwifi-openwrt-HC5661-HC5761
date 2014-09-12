@@ -1,0 +1,30 @@
+#!/bin/sh
+#
+# Copyright (C) 2012-2013 Hiwifi Wireless
+#
+
+. /lib/functions/uci-defaults.sh
+. /lib/ralink.sh
+
+board=$(tw_board_name)
+
+#parameters description:
+# $1: just a name for cfg="btn_$1" in uci-defaults.sh
+# $2: struct gpio_keys_button.desc defined in mach-xxx.c
+# $3: action type
+# $4: action handler
+# $5: action avalid min time, only in "ucidef_set_button_active_long()"
+# $6: action avalid max time, only in "ucidef_set_button_active_long()"
+
+case "$board" in
+*)
+	#perform factory reset (long press)
+	ucidef_set_button_active_long "RESET" "reset" "released" "rled && firstboot && reboot" "3" "30"
+	#simulate wps start (short press)
+	ucidef_set_button_active_short "WPS" "reset" "released" "logger simulate WPS start"
+	;;
+esac
+
+ucidef_commit_buttons
+
+exit 0

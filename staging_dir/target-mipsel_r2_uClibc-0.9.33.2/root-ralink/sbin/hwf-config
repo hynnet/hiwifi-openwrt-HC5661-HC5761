@@ -1,0 +1,68 @@
+#!/bin/sh
+# Copyright (C) 2013-2014 www.hiwifi.com
+
+. /lib/functions.sh
+
+CONF_BACKUP=0
+CONF_RESTORE=0
+HELP=0
+
+if [ -n "$1" ]; then
+	case "$1" in
+		-s) CONF_BACKUP=1;;
+		-r) CONF_RESTORE=1;;
+		-h|--help) HELP=1; break;;
+		-*)
+			echo "Invalid option: $1"
+			exit 1
+		;;
+		*) break;;
+	esac
+fi
+
+if [ $# != 1 -o $HELP -gt 0 ]; then
+	cat <<EOF
+Usage: $0 [options]
+
+Options:
+	-s
+	             save HiWiFi config.
+	-r
+	             restore HiWiFi config.
+	-h / --help  display this help.
+
+EOF
+	exit 1
+fi
+
+mtdpart="$(find_mtd_part hwf_config)"
+[ -z "$mtdpart" ] && exit 1
+
+if [ $CONF_BACKUP -gt 0 ]; then
+	lock /var/run/hwf-save-config.lock
+
+	rm -f /tmp/hwf-conf.tar
+	sysupgrade -b /tmp/hwf-conf.tar
+	mtd -q erase hwf_config
+	mtd -q write /tmp/hwf-conf.tar hwf_config
+	rm -f /tmp/hwf-conf.tar
+
+	lock -u /var/run/hwf-save-config.lock
+fi
+
+if [ $CONF_RESTORE -gt 0 ]; then
+	# tar.gz magic number
+	magic=$(dd if=$mtdpart bs=1 skip=0 2>/dev/null | hexdump -n 2 -e '2/1 "%02x"')
+	[ "$magic" != "1f8b" ] && exit 1
+
+	lock /var/run/hwf-save-config.lock
+
+	rm -f /tmp/hwf-conf.tar
+	cat $mtdpart >/tmp/hwf_conf.tar
+	tar -C / -xzf /tmp/hwf_conf.tar
+	rm -f /tmp/hwf-conf.tar
+
+	lock -u /var/run/hwf-save-config.lock
+fi
+
+sync

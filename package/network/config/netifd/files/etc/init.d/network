@@ -1,0 +1,96 @@
+#!/bin/sh /etc/rc.common
+
+EXTRA_COMMANDS="status"
+
+START=20
+STOP=90
+
+SERVICE_DAEMONIZE=1
+SERVICE_WRITE_PID=1
+
+start() {
+	stop
+	[ -e /proc/sys/kernel/core_pattern ] && {
+		ulimit -c unlimited
+		echo '/tmp/%e.%p.%s.%t.core' > /proc/sys/kernel/core_pattern
+	}
+	service_start /sbin/netifd
+
+	setup_switch() { return 0; }
+
+	include /lib/network
+	setup_switch
+
+	sleep 1
+
+	/sbin/wifi down
+	/sbin/wifi up
+}
+
+restart() {
+	ifdown -a
+	sleep 1
+	start
+}
+
+shutdown() {
+	ifdown -a
+	stop
+}
+
+stop() {
+	service_stop /sbin/netifd
+	/sbin/wifi down
+}
+
+reload() {
+	ubus call network reload
+	/sbin/wifi down
+	/sbin/wifi up
+}
+
+dump_wan_status() {
+	. /lib/functions/network.sh
+
+	json_load "$(devstatus $(uci get network.wan.ifname))"
+	json_get_var dev_up up
+
+	wlan_st=$(uci get wireless.@wifi-iface[1].network 2>/dev/null)
+	if [ ${wlan_st:-?} = "wan" ]; then
+		local wlan_iface=$(uci get network.wan.ifname)
+		dev_link=$(lua -e "require 'hcwifi';print(hcwifi.get(\"$wlan_iface\",'status'))")
+	else
+		link_st=$(switch status wan 2>/dev/null | awk -F: '{print $2}' | awk '{print $1}')
+		if [ ${link_st:-?} = "up" ]; then
+			dev_link=1
+		elif [ ${link_st:-?} = "down" ]; then
+			dev_link=0
+		else
+			json_get_var dev_link link
+		fi
+	fi
+
+	if [ $dev_up -eq 1 ]; then
+		json_load "$(ubus call network.interface.wan status -S)"
+		json_get_var iface_up up
+		json_get_var iface_pending pending
+		json_get_var iface_proto proto
+		
+		[ $iface_up -eq 0 -a $iface_proto = "pppoe" ] && {
+			err=$(tail -n 150 /tmp/log/ppp.log | grep "Plugin rp-pppoe.so loaded" -B 14 | tail -n 15)
+			msg=$(echo "$err" | grep "E=" | sed 's/^.*:..:.. //' | tail -n 1)
+		}
+	fi
+
+	json_init
+	json_add_boolean dev_up "$dev_up"
+	json_add_boolean dev_link "$dev_link"
+	json_add_boolean iface_up "$iface_up"
+	json_add_boolean iface_pending "$iface_pending"
+	json_add_string msg "$msg"
+	json_dump
+}
+
+status() {
+	dump_$1_status
+}

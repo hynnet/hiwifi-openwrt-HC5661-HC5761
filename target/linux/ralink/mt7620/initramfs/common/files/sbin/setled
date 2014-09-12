@@ -1,0 +1,40 @@
+#!/bin/sh
+
+. /lib/functions.sh
+
+bdname=$(hiwifi_board_name)
+
+case "$bdname" in
+*)
+	bdname="HC5761"
+	;;
+esac
+
+led_set_attr() {
+	[ -f "/sys/class/leds/$1/$2" ] && echo "$3" > "/sys/class/leds/$1/$2"
+}
+
+timer() {
+	led_set_attr $1 "brightness" "255"
+	led_set_attr $1 "trigger" "timer"
+	led_set_attr $1 "delay_on" "$2"
+	led_set_attr $1 "delay_off" "$3"
+}
+
+on() {
+	led_set_attr $1 "brightness" "255"
+	led_set_attr $1 "trigger" "default-on"
+}
+
+off() {
+	led_set_attr $1 "brightness" "0"
+	led_set_attr $1 "trigger" "none"
+}
+
+extra_trigger() {
+	led_set_attr $1 "brightness" "255"
+	led_set_attr $1 "trigger" "$2"
+}
+
+
+$1 "$bdname:$2:$3" $4 $5

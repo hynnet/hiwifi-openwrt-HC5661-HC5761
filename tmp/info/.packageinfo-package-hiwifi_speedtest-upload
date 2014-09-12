@@ -1,0 +1,18 @@
+Source-Makefile: package/package-hiwifi/speedtest-upload/Makefile
+Package: speedtest-upload
+Submenu: Utilites
+Version: 0.0.1-20140226
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libstdcpp
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Turbo Wireless
+Title: speedtest-upload
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: 	speedtest-upload is a multiple task uploader for speedtest.
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

@@ -1,0 +1,11 @@
+prefix=/usr
+exec_prefix=/usr
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: json-c
+Description: JSON implementation in C, compat shim.  Use json-c instead.
+Version: 0.11
+Requires: json-c
+Libs:
+Cflags:

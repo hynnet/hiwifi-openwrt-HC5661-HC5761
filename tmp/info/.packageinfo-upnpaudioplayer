@@ -1,0 +1,18 @@
+Source-Makefile: package/upnpaudioplayer/Makefile
+Package: upnpaudioplayer
+Version: 0.1-git-582b81f5e35a2fc6b03158fe37c5913113aa2cd6
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +gstreamer +libgupnp
+Menu-Depends: 
+Provides: 
+Build-Depends: !BUILD_NLS:libiconv !BUILD_NLS:libintl
+Section: multimedia
+Category: Multimedia
+Title: A Headless UPnP Renderer
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: upnpaudioplayer-0.1-git-582b81f5e35a2fc6b03158fe37c5913113aa2cd6.tar.gz
+Type: ipkg
+Description:   It's an application that plays audio that is controlled via UPnP ("Universal Plug and Play")
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

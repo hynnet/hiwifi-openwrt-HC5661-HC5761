@@ -1,0 +1,15 @@
+./
+./usr
+./usr/include
+./usr/include/libnfnetlink
+./usr/include/libnfnetlink/linux_nfnetlink_compat.h
+./usr/include/libnfnetlink/linux_nfnetlink.h
+./usr/include/libnfnetlink/libnfnetlink.h
+./usr/lib
+./usr/lib/libnfnetlink.a
+./usr/lib/pkgconfig
+./usr/lib/pkgconfig/libnfnetlink.pc
+./usr/lib/libnfnetlink.so.0
+./usr/lib/libnfnetlink.so
+./usr/lib/libnfnetlink.so.0.2.0
+./host

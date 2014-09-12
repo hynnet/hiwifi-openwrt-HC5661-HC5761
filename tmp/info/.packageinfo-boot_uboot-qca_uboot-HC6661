@@ -1,0 +1,20 @@
+Source-Makefile: package/boot/uboot-qca/uboot-HC6661/Makefile
+Package: uboot-ar71xx-HC6661
+Default: y if (TARGET_ar71xx_generic_HC6661 || TARGET_ar71xx_generic_Default || CONFIG_TARGET_ar71xx_generic_Minimal)
+Version: 1.1.4-gd10afb39-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_ar71xx_generic_HC6661
+Menu-Depends: 
+Provides: 
+Build-Variant: HC6661
+Section: boot
+Category: Boot Loaders
+Title: U-boot for HC6661 ar9341 board
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: u-boot-1.1.4-gd10afb39.tar.bz2
+Type: bin
+Description: U-boot for HC6661 ar9341 board
+http://www.denx.de/wiki/U-Boot
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

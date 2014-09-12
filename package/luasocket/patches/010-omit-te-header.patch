@@ -1,0 +1,21 @@
+--- a/src/http.lua	2013-11-05 16:18:43.530222843 +0800
++++ b/src/http.lua	2013-11-05 16:26:01.137218453 +0800
+@@ -25,7 +25,7 @@
+ -- default port for document retrieval
+ PORT = 80
+ -- user agent field sent in request
+-USERAGENT = socket._VERSION
++USERAGENT = "LuaSocket-Hiwifi/2.0.2"
+ 
+ -----------------------------------------------------------------------------
+ -- Reads MIME headers from a connection, unfolding where needed
+@@ -210,8 +210,7 @@
+     local lower = {
+         ["user-agent"] = USERAGENT,
+         ["host"] = reqt.host,
+-        ["connection"] = "close, TE",
+-        ["te"] = "trailers"
++        ["connection"] = "close"
+     }
+     -- if we have authentication information, pass it along
+     if reqt.user and reqt.password then

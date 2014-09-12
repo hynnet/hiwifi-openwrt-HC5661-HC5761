@@ -1,0 +1,18 @@
+Source-Makefile: package/feeds-hiwifi/cronie/Makefile
+Package: cronie
+Version: 1.4.11-20140610
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: utils
+Category: Utilities
+Title: Crontab(formerly vixie cron)
+Maintainer: Hiwifi
+Source: cronie-1.4.11.tar.gz
+Type: ipkg
+Description: 	Crontab implementation
+http://packages.debian.org/stable/at
+Hiwifi
+@@
+
+

@@ -1,0 +1,18 @@
+Source-Makefile: package/network/services/wpad-hiwifi/Makefile
+Package: wpad-hiwifi
+Version: 1.0-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libuci +libcurl
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: IEEE 802.1x Authenticator
+Maintainer: Abu Cheng <abu.zheng@hiwifi.tw>
+Source: 
+Type: ipkg
+Description:   This package contains a IEEE 802.1x/WPA Authenticator.
+http://www.hiwifi.com
+Abu Cheng <abu.zheng@hiwifi.tw>
+@@
+
+

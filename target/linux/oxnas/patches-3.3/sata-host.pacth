@@ -1,0 +1,28 @@
+diff -Nru linux-3.1.10/drivers/ata/Kconfig OX820-3.1-Linux/drivers/ata/Kconfig
+--- linux-3.1.10/drivers/ata/Kconfig	2012-01-18 23:33:18.000000000 +0800
++++ OX820-3.1-Linux/drivers/ata/Kconfig	2013-06-03 15:07:55.067823201 +0800
+@@ -231,6 +231,13 @@
+ 
+ 	  If unsure, say N.
+ 
++config SATA_OX820
++	tristate "OX820 SATA support"
++	help
++	  This option enables support for the OX820 Serial ATA family.
++
++	  If unsure, say N.
++
+ config SATA_PROMISE
+ 	tristate "Promise SATA TX2/TX4 support"
+ 	depends on PCI
+diff -Nru linux-3.1.10/drivers/ata/Makefile OX820-3.1-Linux/drivers/ata/Makefile
+--- linux-3.1.10/drivers/ata/Makefile	2012-01-18 23:33:18.000000000 +0800
++++ OX820-3.1-Linux/drivers/ata/Makefile	2013-06-03 15:07:55.067823201 +0800
+@@ -9,6 +9,7 @@
+ obj-$(CONFIG_SATA_INIC162X)	+= sata_inic162x.o
+ obj-$(CONFIG_SATA_SIL24)	+= sata_sil24.o
+ obj-$(CONFIG_SATA_DWC)		+= sata_dwc_460ex.o
++obj-$(CONFIG_SATA_OX820)	+= sata_ox820.o
+ 
+ # SFF w/ custom DMA
+ obj-$(CONFIG_PDC_ADMA)		+= pdc_adma.o

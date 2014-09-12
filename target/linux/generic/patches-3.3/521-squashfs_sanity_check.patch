@@ -1,0 +1,63 @@
+--- a/fs/squashfs/dir.c
++++ b/fs/squashfs/dir.c
+@@ -54,6 +54,7 @@
+ {
+ 	struct squashfs_sb_info *msblk = sb->s_fs_info;
+ 	int err, i, index, length = 0;
++	unsigned int size;
+ 	struct squashfs_dir_index dir_index;
+ 
+ 	TRACE("Entered get_dir_index_using_offset, i_count %d, f_pos %lld\n",
+@@ -64,7 +65,7 @@
+ 	 * is offset by 3 because we invent "." and ".." entries which are
+ 	 * not actually stored in the directory.
+ 	 */
+-	if (f_pos < 3)
++	if (f_pos <= 3)
+ 		return f_pos;
+ 	f_pos -= 3;
+ 
+@@ -81,8 +82,14 @@
+ 			 */
+ 			break;
+ 
++		size = le32_to_cpu(dir_index.size) + 1;
++
++		/* size should never be larger than SQUASHFS_NAME_LEN */
++		if (size > SQUASHFS_NAME_LEN)
++			break;
++
+ 		err = squashfs_read_metadata(sb, NULL, &index_start,
+-				&index_offset, le32_to_cpu(dir_index.size) + 1);
++				&index_offset, size);
+ 		if (err < 0)
+ 			break;
+ 
+--- a/fs/squashfs/super.c
++++ b/fs/squashfs/super.c
+@@ -158,8 +158,13 @@
+ 		goto failed_mount;
+ 	}
+ 
++	/* Check block log for sanity */
+ 	msblk->block_log = le16_to_cpu(sblk->block_log);
+ 	if (msblk->block_log > SQUASHFS_FILE_MAX_LOG)
++		goto failed_mount;
++
++	/* Check that block_size and block_log match */
++	if (msblk->block_size != (1 << msblk->block_log))
+ 		goto failed_mount;
+ 
+ 	/* Check the root inode for sanity */
+@@ -421,6 +426,11 @@
+ 
+ static void destroy_inodecache(void)
+ {
++	/*
++	 * Make sure all delayed rcu free inodes are flushed before we
++	 * destroy cache.
++	 */
++	rcu_barrier();
+ 	kmem_cache_destroy(squashfs_inode_cachep);
+ }
+ 

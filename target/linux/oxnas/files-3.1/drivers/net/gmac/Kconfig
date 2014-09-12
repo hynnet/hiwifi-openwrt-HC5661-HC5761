@@ -1,0 +1,53 @@
+menuconfig SYNOPSYS_GMAC
+	tristate "Synopsys Gigabit MAC"
+	select CRC32
+	select MII
+	depends on ARCH_OX820 || ARCH_OXNAS
+	help
+		Driver for the Synopsys Gigabit MAC
+
+if SYNOPSYS_GMAC
+
+config OXNAS_LEON_X2
+	bool "x2 Leon clock"
+	depends on SYNOPSYS_GMAC
+	default y
+
+config OXNAS_IPV6_OFFLOAD
+	bool "IPv6 offload"
+	depends on SYNOPSYS_GMAC
+	default y
+
+config OXNAS_MAX_GMAC_UNITS
+	int "How many Ethernet ports"
+	depends on SYNOPSYS_GMAC
+	default 1 if OXNAS_VERSION_OX810
+	default 1 if OXNAS_VERSION_OX815
+	default 1 if OXNAS_VERSION_OX820
+	default 2 if OXNAS_VERSION_OX825
+
+config OXNAS_NAPI_POLL_WEIGHT
+	int "NAPI poll weight for GMAC driver"
+	depends on SYNOPSYS_GMAC
+	default 64
+	help
+			Allow the GMAC driver poll weight to be set
+
+config OXNAS_GMAC_DDR_DESCRIPTORS
+	bool "GMAC DDR Descriptors"
+	depends on SYNOPSYS_GMAC
+	default y
+
+config OXNAS_GMAC_SRAM_TX_DESCRIPTORS
+	bool "GMAC SRAM for Tx descriptors"
+	depends on OXNAS_GMAC_DDR_DESCRIPTORS
+	default n
+	help
+		If set then the Rx descriptors managed by the ARM will be in DDR
+		while Tx descriptors managed by the Leon will be in SRAM
+
+config OXNAS_COPRO_JOB_QUEUE_NUM_ENTRIES
+	int "Number of entries in ARM/Leon Tx offload job queue"
+	default 16 if OXNAS_GMAC_DDR_DESCRIPTORS
+	default 8
+endif

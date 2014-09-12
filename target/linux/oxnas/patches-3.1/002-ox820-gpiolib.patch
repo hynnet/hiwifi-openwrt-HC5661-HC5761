@@ -1,0 +1,35 @@
+Index: linux-3.1.10/drivers/gpio/Kconfig
+===================================================================
+--- linux-3.1.10/drivers/gpio/Kconfig	(版本 12)
++++ linux-3.1.10/drivers/gpio/Kconfig	(版本 13)
+@@ -330,6 +330,18 @@
+ 	  Say yes here to access the GPIO signals of WM8994 audio hub
+ 	  CODECs from Wolfson Microelectronics.
+ 
++config GPIO_OX820
++	tristate "OX820 GPIOs"
++	depends on ARCH_OX820
++	help
++	  Say yes here to access the GPIO signals of OX820
++      
++config GPIO_OX820_USE_IRQ
++    bool "OX820 GPIO Irq Support"
++    depends on GPIO_OX820
++    help
++        Enable this to use IRQ support within OX820 GPIO driver
++
+ config GPIO_ADP5520
+ 	tristate "GPIO Support for ADP5520 PMIC"
+ 	depends on PMIC_ADP5520
+Index: linux-3.1.10/drivers/gpio/Makefile
+===================================================================
+--- linux-3.1.10/drivers/gpio/Makefile	(版本 12)
++++ linux-3.1.10/drivers/gpio/Makefile	(版本 13)
+@@ -38,6 +38,7 @@
+ obj-$(CONFIG_GPIO_PCH)		+= gpio-pch.o
+ obj-$(CONFIG_GPIO_PL061)	+= gpio-pl061.o
+ obj-$(CONFIG_GPIO_RDC321X)	+= gpio-rdc321x.o
++obj-$(CONFIG_GPIO_OX820)	+= gpio-ox820.o
+ 
+ obj-$(CONFIG_GPIO_PLAT_SAMSUNG)	+= gpio-plat-samsung.o
+ obj-$(CONFIG_GPIO_S5PC100)	+= gpio-s5pc100.o

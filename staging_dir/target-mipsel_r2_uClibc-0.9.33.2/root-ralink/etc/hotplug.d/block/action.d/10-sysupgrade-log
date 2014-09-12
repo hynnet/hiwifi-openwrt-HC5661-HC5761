@@ -1,0 +1,24 @@
+#!/bin/sh /etc/rc.common
+
+log_max_index=5
+
+store_log() {
+	if [[ -f "$1" ]]; then
+		ls "$1"-* > /dev/null 2>&1
+		if [[ "$?" -ne "0" ]]; then
+			i=0
+		else
+			i=`ls -l "$1"-* | awk END'{print NR}'`
+			if [[ "$i" -gt "$log_max_index" ]]; then
+				i=0
+			fi
+		fi
+		mv "$1" "$1"-"$i"
+	fi	
+}
+
+start() {
+	store_log "/tmp/data/mtd_log_u-boot"
+	store_log "/tmp/data/mtd_log_firmware"
+	store_log "/tmp/data/sysupgrade_log"
+}

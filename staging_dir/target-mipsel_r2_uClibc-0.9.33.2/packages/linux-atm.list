@@ -1,0 +1,14 @@
+./
+./usr
+./usr/include
+./usr/include/atmarp.h
+./usr/include/atm.h
+./usr/include/atmd.h
+./usr/include/atmsap.h
+./usr/include/atmarpd.h
+./usr/lib
+./usr/lib/libatm.a
+./usr/lib/libatm.so.1
+./usr/lib/libatm.so
+./usr/lib/libatm.so.1.0.0
+./host

@@ -1,0 +1,20 @@
+Source-Makefile: package/gevent/Makefile
+Package: gevent
+Submenu: Python
+Version: 1.0-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +python +python-greenlet +libevent2 +librt
+Menu-Depends: 
+Provides: 
+Build-Depends: python
+Section: language-python
+Category: Languages
+Title: gevent
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: gevent-1.0.tar.gz
+Type: ipkg
+Description:   gevent is a coroutine-based Python networking library.
+http://www.gevent.org/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

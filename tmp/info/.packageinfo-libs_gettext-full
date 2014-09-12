@@ -1,0 +1,20 @@
+Source-Makefile: package/libs/gettext-full/Makefile
+Package: libintl-full
+Version: 0.18.1.1-2
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Build-Depends: gettext-full/host
+Build-Types: host
+Section: libs
+Category: Libraries
+Title: GNU Internationalization library
+Maintainer: Jo-Philipp Wich <jow@openwrt.org>
+Source: gettext-0.18.1.1.tar.gz
+Type: ipkg
+Description: GNU Internationalization library
+http://www.gnu.org/software/gettext/
+Jo-Philipp Wich <jow@openwrt.org>
+@@
+
+

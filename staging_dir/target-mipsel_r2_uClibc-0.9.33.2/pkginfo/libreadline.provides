@@ -1,0 +1,17 @@
+libc.so.0
+libcrypt-0.9.33.2.so
+libcrypt.so.0
+libdl-0.9.33.2.so
+libdl.so.0
+libgcc_s.so.1
+libhistory.so
+libhistory.so.5
+libhistory.so.5.2
+libm-0.9.33.2.so
+libm.so.0
+libreadline.so
+libreadline.so.5
+libreadline.so.5.2
+libuClibc-0.9.33.2.so
+libutil-0.9.33.2.so
+libutil.so.0

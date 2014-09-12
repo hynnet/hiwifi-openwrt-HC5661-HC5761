@@ -1,0 +1,17 @@
+libc.so.0
+libcom_err.so.2
+libcom_err.so.2.1
+libcrypt-0.9.33.2.so
+libcrypt.so.0
+libdl-0.9.33.2.so
+libdl.so.0
+libext2fs.so.2
+libext2fs.so.2.4
+libgcc_s.so.1
+libm-0.9.33.2.so
+libm.so.0
+libpthread-0.9.33.2.so
+libpthread.so.0
+libuClibc-0.9.33.2.so
+libutil-0.9.33.2.so
+libutil.so.0

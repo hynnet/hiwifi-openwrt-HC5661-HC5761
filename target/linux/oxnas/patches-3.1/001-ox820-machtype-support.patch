@@ -1,0 +1,12 @@
+Index: linux-3.1.10/arch/arm/tools/mach-types
+===================================================================
+--- linux-3.1.10/arch/arm/tools/mach-types	(版本 9)
++++ linux-3.1.10/arch/arm/tools/mach-types	(版本 10)
+@@ -1147,6 +1147,7 @@
+ omap_3430sdp		MACH_OMAP_3430SDP	OMAP_3430SDP		1138
+ bluetouch		MACH_BLUETOUCH		BLUETOUCH		1139
+ vstms			MACH_VSTMS		VSTMS			1140
++ox820                   MACH_OX820              OX820                   1152
+ xsbase270		MACH_XSBASE270		XSBASE270		1141
+ at91sam9260ek_cn	MACH_AT91SAM9260EK_CN	AT91SAM9260EK_CN	1142
+ adsturboxb		MACH_ADSTURBOXB		ADSTURBOXB		1143

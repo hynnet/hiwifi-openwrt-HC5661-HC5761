@@ -1,0 +1,89 @@
+#! /bin/bash
+
+#  This script is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2 as
+#  published by the Free Software Foundation.
+#
+#  See the COPYING and AUTHORS files for more details.
+
+# Read in library functions
+if [ "$(type -t patch_file_name)" != function ]
+then
+	if ! [ -r $QUILT_DIR/scripts/patchfns ]
+	then
+		echo "Cannot read library $QUILT_DIR/scripts/patchfns" >&2
+		exit 1
+	fi
+	. $QUILT_DIR/scripts/patchfns
+fi
+
+usage()
+{
+	printf $"Usage: quilt new {patchname}\n"
+	if [ x$1 = x-h ]
+	then
+		printf $"
+Create a new patch with the specified file name, and insert it after the
+topmost patch.
+
+Quilt can be used in sub-directories of a source tree. It determines the
+root of a source tree by searching for a %s directory above the
+current working directory. Create a %s directory in the intended root
+directory if quilt chooses a top-level directory that is too high up
+in the directory tree.
+" "$QUILT_PATCHES" "$QUILT_PATCHES"
+		exit 0
+	else
+		exit 1
+	fi
+}
+
+options=`getopt -o h -- "$@"`
+
+if [ $? -ne 0 ]
+then
+	usage
+fi
+
+eval set -- "$options"
+
+while true
+do
+	case "$1" in
+	-h)
+		usage -h ;;
+	--)
+		shift
+		break ;;
+	esac
+done
+
+if [ $# -ne 1 ]
+then
+	usage
+fi
+
+patch=${1#$QUILT_PATCHES/}
+
+if patch_in_series $patch
+then
+	printf $"Patch %s exists already\n" "$(print_patch $patch)" >&2
+	exit 1
+fi
+
+create_db
+rm -rf "$QUILT_PC/$patch"
+mkdir -p "$QUILT_PC/$patch"
+
+if ! insert_in_series $patch || \
+   ! add_to_db $patch
+then
+	printf $"Failed to create patch %s\n" "$(print_patch $patch)" >&2
+	exit 1
+else
+	printf $"Patch %s is now on top\n" "$(print_patch $patch)"
+fi
+### Local Variables:
+### mode: shell-script
+### End:
+# vim:filetype=sh

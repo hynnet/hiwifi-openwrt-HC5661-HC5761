@@ -1,0 +1,15 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2011 OpenWrt.org
+
+start() {
+	echo "normal" >/etc/nginx/mode	
+	/etc/init.d/smartqos stop
+	/etc/init.d/kproxy stop
+}
+
+stop() {
+	echo "hiwifi" >/etc/nginx/mode
+	/etc/init.d/kproxy start
+	/etc/init.d/smartqos start
+}
+

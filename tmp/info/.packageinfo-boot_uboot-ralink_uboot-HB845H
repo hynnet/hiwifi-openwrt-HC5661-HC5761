@@ -1,0 +1,19 @@
+Source-Makefile: package/boot/uboot-ralink/uboot-HB845H/Makefile
+Package: uboot-ralink-BL-855R
+Default: y if (TARGET_ralink_mt7620a_custom_HB845H)
+Version: 1.1.3-20140604
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_ralink_mt7620a_custom_HB845H
+Menu-Depends: 
+Provides: 
+Build-Variant: BL-855R
+Section: boot
+Category: Boot Loaders
+Title: U-boot for BL-855R MT7620N board(B-LINK)
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: bin
+Description: U-boot for BL-855R MT7620N board(B-LINK)
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

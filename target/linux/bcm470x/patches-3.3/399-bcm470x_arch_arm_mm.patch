@@ -1,0 +1,54 @@
+--- a/arch/arm/mm/Makefile	2013-06-02 19:18:25.684000472 +0800
++++ b/arch/arm/mm/Makefile	2013-06-02 19:20:48.048000527 +0800
+@@ -1,3 +1,8 @@
++ifeq ($(CONFIG_PLAT_BCM5301X),y)
++EXTRA_CFLAGS+=-I$(srctree)/brcm/include -I$(srctree)/brcm/shared/bcmwifi/include -DBCMDRIVER -Dlinux
++EXTRA_AFLAGS+=-I$(srctree)/brcm/include -I$(srctree)/brcm/shared/bcmwifi/include -DBCMDRIVER -Dlinux
++endif
++
+ #
+ # Makefile for the linux arm-specific parts of the memory manager.
+ #
+--- a/arch/arm/mm/proc-macros.S	2013-06-02 19:18:25.692000432 +0800
++++ b/arch/arm/mm/proc-macros.S	2013-06-02 19:19:58.844000456 +0800
+@@ -307,6 +307,9 @@
+ 	.long	\name\()_dma_map_area
+ 	.long	\name\()_dma_unmap_area
+ 	.long	\name\()_dma_flush_range
++#ifdef CONFIG_PLAT_BCM5301X
++	.long	\name\()_dma_inv_range
++#endif
+ 	.size	\name\()_cache_fns, . - \name\()_cache_fns
+ .endm
+ 
+--- a/arch/arm/mm/proc-v7.S	2013-06-02 19:18:25.664000417 +0800
++++ b/arch/arm/mm/proc-v7.S	2013-06-02 19:19:15.952000480 +0800
+@@ -170,7 +170,27 @@
+ 	mcreq	p15, 0, r0, c1, c0, 1
+ #endif
+ __v7_setup:
+-	adr	r12, __v7_setup_stack		@ the local stack
++#ifdef CONFIG_PLAT_BCM5301X	
++	@ temporary local stack in RAM, physical address, MMU is off
++#ifdef CONFIG_SPARSEMEM
++	ldr r0, =(PAGE_OFFSET+SZ_128M)
++	ldr r1, =__v7_setup_stack
++	cmp r1, r0
++	bge 1f
++	ldr r0, = PAGE_OFFSET
++	sub r12, r1, r0
++	b 2f
++1:
++	sub r1, r1, r0
++	ldr r0, = PHYS_OFFSET2
++	add r12, r1, r0
++2:
++#else
++	ldr	r12, =__virt_to_phys(__v7_setup_stack)
++#endif
++#else
++	adr	r12, __v7_setup_stack
++#endif
+ 	stmia	r12, {r0-r5, r7, r9, r11, lr}
+ 	bl	v7_flush_dcache_all
+ 	ldmia	r12, {r0-r5, r7, r9, r11, lr}

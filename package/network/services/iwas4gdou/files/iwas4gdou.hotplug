@@ -1,0 +1,20 @@
+#!/bin/sh
+# This script is executed as part of the hotplug event with
+# HOTPLUG_TYPE=iface, triggered by various scripts when an interface
+# is configured (ACTION=ifup) or deconfigured (ACTION=ifdown).  The
+# interface is available as INTERFACE, the real device as DEVICE.
+
+[ "$INTERFACE" != "wan" ] && exit 0
+
+Enabled=`uci get iwas4gdou.@base_set[0].enable 2>/dev/null`
+
+[ ${Enabled:-0} -ne 1 ] && exit 0
+
+case "$ACTION" in
+	ifup)
+		/etc/init.d/iwas4gdou restart
+	;;
+	ifdown)
+		/etc/init.d/iwas4gdou stop
+	;;
+esac

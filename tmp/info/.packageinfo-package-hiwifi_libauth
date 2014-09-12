@@ -1,0 +1,18 @@
+Source-Makefile: package/package-hiwifi/libauth/Makefile
+Package: libauth
+Version: 66-20140428
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libtw +libbdinfo +libcurl +libopenssl
+Menu-Depends: 
+Provides: 
+Section: libs
+Category: Turbo Wireless
+Title: Library for Authentication
+Maintainer: Hong Shen <sh@ikwcn.com>
+Source: 
+Type: ipkg
+Description: Library for Authentication
+http://10.9.1.43/cloud
+Hong Shen <sh@ikwcn.com>
+@@
+
+

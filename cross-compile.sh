@@ -1,0 +1,1 @@
+scripts/cross-compile.sh

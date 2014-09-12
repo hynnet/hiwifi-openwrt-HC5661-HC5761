@@ -1,0 +1,5 @@
+#!/bin/sh
+
+. /lib/storage.sh
+
+hiwifi_storage_force_format

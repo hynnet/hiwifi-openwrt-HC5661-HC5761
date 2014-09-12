@@ -1,0 +1,115 @@
+--- a/main.c
++++ b/main.c
+@@ -40,7 +40,7 @@
+ #define USR_MAX      64
+ #define PSW_PROMPT  "Please enter your password:"
+ #define PID_FILE    "/var/run/iwas4gdou-%s.pid"
+-#define OUT_FILE    "/tmp/iwas4gdou-%s"
++#define OUT_FILE    "/var/log/iwas4gdou.log"
+ 
+ int auth_mode = 0, 
+     deauth_mode = 0, 
+@@ -48,7 +48,8 @@ int auth_mode = 0,
+     need_reauth = 0,
+     need_daemon = 1, 
+     need_compatibility = 0,
+-    interval = 190;
++    interval = 190,
++    log2file = 0;
+ 
+ char *if_name, *usr, *psw;
+ char pid_file[PATH_MAX];
+@@ -86,6 +87,14 @@ int main (int argc, char **argv)
+     remove_pid(pid_file);
+   }
+ 
++  if (need_daemon) {
++    if (!daemonize()) {
++      printf("Daemonizing succeeds.\n");
++    } else {
++      fprintf(stderr, "Deamonizing fails.\n");
++    }
++  }
++
+   if (auth_mode) {
+     if (bind_device()) {
+       return (-1);
+@@ -94,13 +103,6 @@ int main (int argc, char **argv)
+     if (!iwas4g_auth(usr, psw)) {
+       printf("Authentication succeeds.\n");
+       if (need_reauth) {
+-        if (need_daemon) {
+-          if (!daemonize()) {
+-            printf("Daemonizing succeeds.\n");
+-          } else {
+-            fprintf(stderr, "Deamonizing fails.\n");
+-          }
+-        }
+         write_pid(pid_file);
+         signal(SIGTERM, termination);
+ 
+@@ -129,17 +131,18 @@ get_opt (int argc, char **argv)
+     {"help",          0,  NULL,  'h'},
+     {"deauth",        0,  NULL,  'd'},
+     {"auth",          0,  NULL,  'a'},
+-    {"interface",    	1,  NULL,  'i'},
++    {"interface",     1,  NULL,  'i'},
+     {"user",          1,  NULL,  'u'},
+     {"password",      1,  NULL,  'p'},
+     {"interval",      1,  NULL,  't'},
+     {"reauth",        0,  NULL,  'r'},
+     {"foreground",    0,  NULL,  'f'},
+     {"compatibility", 0,  NULL,  'c'},
++    {"log",           1,  NULL,  'l'},
+     {0, 0, 0, 0}
+   };
+ 
+-  while ((opt = getopt_long(argc, argv, "hdai:u:p:rfc", long_opts, NULL)) 
++  while ((opt = getopt_long(argc, argv, "hdai:u:p:rfcl:", long_opts, NULL)) 
+          != -1) {
+     switch (opt) {
+       case '?':
+@@ -192,6 +195,10 @@ get_opt (int argc, char **argv)
+       case 'c':
+         need_compatibility = 1;
+         break;
++
++      case 'l':
++        log2file = atoi(optarg);
++        break;
+     }
+   }
+ 
+@@ -344,7 +351,6 @@ reauth_c (void)
+ static int 
+ daemonize(void)
+ {
+-  char out_file[PATH_MAX];
+   int pid;
+ 
+   pid = fork();
+@@ -368,14 +374,16 @@ daemonize(void)
+   signal(SIGHUP, SIG_IGN);
+   signal(SIGCHLD, SIG_IGN);
+ 
+-  close(0);
+-  close(1);
+-  close(2);
+-
+-  open("/dev/null", O_RDWR);
+-  sprintf(out_file, OUT_FILE, if_name);
+-  open(out_file, O_WRONLY|O_CREAT|O_TRUNC, 0600);
+-  open(out_file, O_WRONLY|O_CREAT|O_TRUNC, 0600);
++  if (log2file == 1) {
++    close(0);
++    close(1);
++    close(2);
++
++    open("/dev/null", O_RDWR);
++    open(OUT_FILE, O_WRONLY|O_CREAT|O_TRUNC, 0600);
++    open(OUT_FILE, O_WRONLY|O_CREAT|O_TRUNC, 0600);
++  }
++
+   chdir("/");
+   umask(0);
+   return (0);

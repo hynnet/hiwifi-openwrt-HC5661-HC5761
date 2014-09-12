@@ -1,0 +1,33 @@
+Source-Makefile: package/package-hiwifi/xt_qqvoice/Makefile
+Package: xt_qqvoice
+Version: 20140507-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +kmod-xt_qqvoice
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Turbo Wireless
+Title: Xtables match qq voice packets
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Xtables match qq voice packets
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: kmod-xt_qqvoice
+Submenu: Netfilter Extensions
+Version: <LINUX_VERSION>-20140507-1
+Depends: +kmod-ipt-core +iptables
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Xtables match qq voice module
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Xtables match qq voice module
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

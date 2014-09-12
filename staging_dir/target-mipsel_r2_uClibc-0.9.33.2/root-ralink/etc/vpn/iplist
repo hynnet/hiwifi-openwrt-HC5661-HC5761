@@ -1,0 +1,41 @@
+216.157.85.0    255.255.255.0  ip.cn
+31.13.0.0       255.255.0.0    facebook
+173.252.110.0   255.255.255.0  facebook
+173.252.73.0    255.255.255.0  facebook
+6.220.0.0       255.255.0.0    facebook
+66.220.0.0       255.255.0.0   facebook
+69.171.0.0      255.255.0.0    facebook
+125.252.225.0   255.255.255.0  facebook @Australia static fbstatic-a.akamaihd.net
+210.149.135.0   255.255.255.0  facebook @JP static fbstatic-a.akamaihd.net
+72.246.119.0    255.255.255.0  facebook @HK static fbstatic-a.akamaihd.net
+131.103.136.0   255.255.255.0  facebook @US static fbstatic-a.akamaihd.net
+203.42.0.0   	255.255.0.0    facebook @*c.youtube.com
+74.125.0.0   	255.255.0.0    facebook @youtube-nocookie.com
+199.59.0.0      255.255.0.0    twitter
+74.125.0.0      255.255.0.0    google
+173.194.0.0     255.255.0.0    android.google
+199.47.216.0    255.255.255.0  dropbox.com
+199.47.217.0    255.255.255.0  dropbox.com
+108.160.163.0   255.255.255.0  notify7.dropbox.com
+108.160.162.0   255.255.255.0  notify7.dropbox.com
+67.228.116.0    255.255.255.0  openvpn.net
+216.34.181.0    255.255.255.0  sourceforge.net
+173.245.80.0    255.255.255.0  openvpn.net/privatetunnel.com
+69.58.188.0     255.255.255.0  bit.ly
+207.97.227.0    255.255.255.0  github
+218.145.28.0    255.255.255.0  chosun.com(port8080)
+69.191.252.0    255.255.255.0  businessweek.com
+69.191.215.0    255.255.255.0  businessweek.com
+74.53.4.0       255.255.255.0  mitbbs.com
+74.113.233.0    255.255.255.0  vimeo.com
+218.189.25.0    255.255.255.0  youtube.hk
+125.56.218.0    255.255.255.0  facebook @HK static fbstatic-a.akamaihd.net
+125.56.201.0    255.255.255.0  facebook @HK static fbstatic-a.akamaihd.net
+72.233.104.0    255.255.255.0  wordpress
+66.155.11.0     255.255.255.0  wordpress
+76.74.254.0     255.255.255.0  wordpress
+210.59.230.0    255.255.255.0  pchome.com.tw
+210.242.43.0    255.255.255.0  pchome.com.tw
+184.154.128.0   255.255.255.0  t66y.com
+107.23.37.0	255.255.255.0  unknown
+173.212.0.0	255.255.0.0    unknown

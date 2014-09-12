@@ -1,0 +1,20 @@
+Source-Makefile: package/boot/uboot-qca/uboot-tw150v1/Makefile
+Package: uboot-ar71xx-tw150v1
+Default: y if (TARGET_ar71xx_generic_TW150V1 || TARGET_ar71xx_generic_Default || CONFIG_TARGET_ar71xx_generic_Minimal)
+Version: 1.1.4-gd10afb39-20140604
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_ar71xx_generic_TW150V1
+Menu-Depends: 
+Provides: 
+Build-Variant: tw150v1
+Section: boot
+Category: Boot Loaders
+Title: U-boot for tw150v1 ar9331 board
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: u-boot-1.1.4-gd10afb39.tar.bz2
+Type: bin
+Description: U-boot for tw150v1 ar9331 board
+http://www.denx.de/wiki/U-Boot
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

@@ -1,0 +1,33 @@
+--- busybox-1.19.4/networking/ntpd.c	2013-01-23 14:53:57.833928258 +0800
++++ /home/jingyuan.wang/wjy/ntpd.c	2013-01-23 15:00:15.992708288 +0800
+@@ -44,6 +44,8 @@
+ //usage:     "\n	-p PEER	Obtain time from PEER (may be repeated)"
+ 
+ #include "libbb.h"
++#include <bdinfo.h>
++#include <time.h>
+ #include <math.h>
+ #include <netinet/ip.h> /* For IPTOS_LOWDELAY definition */
+ #include <sys/timex.h>
+@@ -838,8 +840,20 @@
+ 	dtime += 1.0e-6 * tv.tv_usec;
+ 	d_to_tv(dtime, &tv);
+ 
+-	if (settimeofday(&tv, NULL) == -1)
++	if (settimeofday(&tv, NULL) == -1) {
+ 		bb_perror_msg_and_die("settimeofday");
++	} else {		
++		time_t t;
++		t = time(&t);
++		struct tm* tm_t = localtime(&t);
++		char buf[20];
++		strftime(buf, 20, "%Y-%m-%d-%H-%M-%S", tm_t);
++		if (bdinfo_version() > 0) {
++			if (bdinfo_set_value("bdtime", buf) != 0)
++				VERB3 bb_error_msg("set bdtime in bdinfo error!\n");
++		}
++		VERB3 bb_error_msg("bdinfo not supported in this rom!\n");
++	}
+ 
+ 	tval = tv.tv_sec;
+ 	strftime(buf, sizeof(buf), "%a %b %e %H:%M:%S %Z %Y", localtime(&tval));

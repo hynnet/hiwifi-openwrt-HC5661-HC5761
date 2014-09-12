@@ -1,0 +1,36 @@
+--- a/drivers/mtd/mtdchar.c
++++ b/drivers/mtd/mtdchar.c
+@@ -807,6 +807,20 @@
+ 		break;
+ 	}
+ 
++	case MEMSETWR:
++	{
++		mtd->flags |= MTD_WRITEABLE;
++		ret = 0;
++		break;
++	}
++
++	case MEMSETRO:
++	{
++		mtd->flags &= (~MTD_WRITEABLE);
++		ret = 0;
++		break;
++	}
++
+ 	case MEMLOCK:
+ 	{
+ 		struct erase_info_user einfo;
+--- a/include/mtd/mtd-abi.h
++++ b/include/mtd/mtd-abi.h
+@@ -202,6 +202,10 @@
+  * without OOB, e.g., NOR flash.
+  */
+ #define MEMWRITE		_IOWR('M', 24, struct mtd_write_req)
++
++#define MEMSETWR		_IOR('M', 30, struct erase_info_user)
++#define MEMSETRO		_IOR('M', 31, struct erase_info_user)
++
+ #define MTDREFRESH		_IO('M', 50)
+ 
+ /*

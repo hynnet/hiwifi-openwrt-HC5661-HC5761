@@ -1,0 +1,39 @@
+#!/bin/sh /etc/rc.common
+
+START=91
+NAME=goagent
+
+PID_FILE=/var/run/${NAME}.pid
+
+handle_goagent() {
+	local config="$1"
+
+	config_get listenip "$1" listenip "192.168.199.1"
+	config_get listenport "$1" listenport "8087"
+	config_get appid "$1" appid "goagent01|goagent02"
+
+	sed -i "/^\[listen\]/,/^\[/ {/^\[listen\]/b;/^\[/b;s/^ip =.*/ip = $listenip/g;}" /tmp/storage/mmcblk0p2/goagent/proxy.ini
+	sed -i "/^\[listen\]/,/^\[/ {/^\[listen\]/b;/^\[/b;s/^port =.*/port = $listenport/g;}" /tmp/storage/mmcblk0p2/goagent/proxy.ini
+	sed -i "/^\[gae\]/,/^\[/ {/^\[gae\]/b;/^\[/b;s/^appid =.*/appid = $appid/g;}" /tmp/storage/mmcblk0p2/goagent/proxy.ini	
+
+	start-stop-daemon -Sqbm -x "/tmp/storage/mmcblk0p2/goagent/goagent.sh" -p ${PID_FILE}
+}
+
+start() {
+	local enabled
+
+	config_load goagent
+	config_get enabled goagent enabled 0
+	[ $enabled -eq 0 ] && {
+		return 0
+	}
+	config_foreach handle_goagent goagent
+}
+
+stop() {
+	if [ -f ${PID_FILE} ]; then
+		start-stop-daemon -Kq -p ${PID_FILE}
+		kill -9 `cat ${PID_FILE}` >/dev/null 2>&1
+		rm -f ${PID_FILE}
+	fi
+}

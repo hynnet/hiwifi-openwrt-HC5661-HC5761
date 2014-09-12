@@ -1,0 +1,17 @@
+Source-Makefile: package/hiwifi/util-switch/Makefile
+Package: util-switch
+Version: 1.1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: utils
+Category: Base system
+Title: Userspace port of the switch tool
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  This package contains an utility to communicate on ethernet switch devices
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

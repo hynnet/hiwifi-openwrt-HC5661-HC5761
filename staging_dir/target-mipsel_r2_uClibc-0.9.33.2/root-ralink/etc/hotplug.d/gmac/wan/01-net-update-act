@@ -1,0 +1,34 @@
+#!/bin/sh /etc/rc.common
+. /lib/functions/net_update_actions.sh
+
+hotplug_net_update()
+{
+	local is_relay=""
+
+	ps | grep i[n]et_chk.sh &> /dev/null
+	if [[ $? -ne 0 ]];then
+		return 0
+	fi
+
+	###WARNNING! We can't deal wireless-relay mode in hotplug because unsupport! We handle it in /usr/bin/inet_chk.sh
+	###Under wireless-relay mode, we need avoid the mistake action of kproxy-update induced by the cable plugin in/out!
+	is_relay="$(lua -e 'local net=require "luci.controller.api.network"; print(net.is_bridge())')"
+	if [[ $? -ne "0" ]]; then
+		return 0
+	elif [[ "$is_relay" = "true" ]]; then
+		return 0
+	fi
+
+	if [[ "linkdown" = "$ACTION" ]]; then
+		netdown_action
+	elif [[ "linkup" = "$ACTION" ]]; then
+		netup_action
+	else
+		return 0
+	fi
+
+}
+get_inet_chk_switch &> /dev/null
+if [ $? -ne 0 ];then
+	hotplug_net_update
+fi

@@ -1,0 +1,17 @@
+Source-Makefile: package/open-card/Makefile
+Package: open-card
+Version: 1.1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: utils
+Category: Utilities
+Title: Skymedi open card utility
+Maintainer: Duke Wu <duke.wu@hiwifi.tw>
+Source: 
+Type: ipkg
+Description: Open card utility for Skymedi USB controller.
+Duke Wu <duke.wu@hiwifi.tw>
+@@
+
+

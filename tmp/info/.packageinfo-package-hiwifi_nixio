@@ -1,0 +1,18 @@
+Source-Makefile: package/package-hiwifi/nixio/Makefile
+Package: nixio
+Version: 0.10.0
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +lua
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: nixio
+Category: Turbo Wireless
+Title: nixio standalone
+Maintainer: Jingyuan Wang <jingyuan.wang@ikw.com>
+Source: nixio-0.10.0.tar.gz
+Type: ipkg
+Description:   nixio description
+Jingyuan Wang <jingyuan.wang@ikw.com>
+@@
+
+

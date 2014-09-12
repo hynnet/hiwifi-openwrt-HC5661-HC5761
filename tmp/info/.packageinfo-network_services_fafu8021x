@@ -1,0 +1,21 @@
+Source-Makefile: package/network/services/fafu8021x/Makefile
+Package: fafu8021x
+Submenu: CERNET
+Version: 1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpcap
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: Another iNode 5.1 802.1X client for F.A.F.U
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  802.1X client compatable with H3C iNode 802.1X client.
+ Support H3C/iNode's private authentication protocol V5.1
+ Succeed in F.A.F.U
+http://www.hiwifi.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

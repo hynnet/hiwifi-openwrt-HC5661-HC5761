@@ -1,0 +1,19 @@
+Source-Makefile: package/boot/cfe-bcm/cfe-HC8961/Makefile
+Package: cfe-bcm470x-HC8961
+Default: y if (TARGET_bcm470x_generic_HC8961)
+Version: 1.0.37-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_bcm470x_generic
+Menu-Depends: 
+Provides: 
+Build-Variant: HC8961
+Section: boot
+Category: Boot Loaders
+Title: cfe for HC8961 based on bcm47081 + bcm4352 + bcm43217 board
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: bin
+Description: cfe for HC8961 based on bcm47081 + bcm4352 + bcm43217 board
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

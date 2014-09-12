@@ -1,0 +1,33 @@
+Source-Makefile: package/package-hiwifi/xt_salist/Makefile
+Package: salist
+Version: 20140303
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +kmod-salist
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Turbo Wireless
+Title: Simple address list iptables extension
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Simple address list iptables extension
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: kmod-salist
+Submenu: Netfilter Extensions
+Version: <LINUX_VERSION>-20140303
+Depends: +kmod-ipt-core +iptables
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Simple address list Netfilter match module
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Simple address list Netfilter match module
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

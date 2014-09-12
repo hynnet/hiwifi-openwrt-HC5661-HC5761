@@ -1,0 +1,2400 @@
+diff -urN napt66-0.2/napt66_conntrack.c napt66-trunk/napt66_conntrack.c
+--- napt66-0.2/napt66_conntrack.c	2011-05-22 15:40:01.000000000 +0800
++++ napt66-trunk/napt66_conntrack.c	2012-03-13 10:09:47.798424805 +0800
+@@ -3,6 +3,10 @@
+ #define MAX_ID 60000
+ #define MIN_ID 2048
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)
++#define LINUX2635
++#endif
++
+ extern char *wan_if;
+ extern struct in6_addr wan_ipv6;
+ extern int hash_add_entry(struct conn_entry* p_entry);
+@@ -247,6 +251,48 @@
+ 	}//while(1)
+ }
+ 
++/*
++
++*/
++
++#ifdef LINUX2635
++/*kernel>=2.6.35*/
++/*Modified by woshiyuhao0819@gmail.com to support the kernel 2.6.35 or upper*/
++int get_ip6_by_name(char* if_name,struct in6_addr* p_ipv6)
++{
++	struct net_device *dev;
++	struct net *net = NULL;
++	struct socket *sock;
++	struct inet6_dev *in_dev6;
++	struct inet6_ifaddr *ifa6 = NULL;
++	struct list_head* list_head_ipv6 = NULL;
++	struct list_head* temp;
++	sock_create_kern(PF_INET6, SOCK_DGRAM, 0,&sock);
++	net = sock_net((const struct sock *)sock->sk);
++	dev = dev_get_by_name(net,if_name);
++	
++	in_dev6 = (struct inet6_dev *)dev->ip6_ptr;
++	
++	while (in_dev6){
++		temp=&(in_dev6->addr_list);
++		list_for_each(list_head_ipv6,temp)
++		{
++			ifa6=list_entry(list_head_ipv6,struct inet6_ifaddr,if_list);
++			if(ifa6)
++				if(ifa6->scope == IPV6_ADDR_ANY){
++					(*p_ipv6) = ifa6->addr;//addr即为eth0接口的v6地址
++					dev_put(dev);
++					return 1;
++				}
++		}
++	in_dev6 = in_dev6->next;
++	}
++
++	dev_put(dev);  
++	return 0;
++}
++#else
++/*other kernel*/
+ int get_ip6_by_name(char* if_name,struct in6_addr* p_ipv6)
+ {
+ 	struct net_device *dev;
+@@ -276,6 +322,7 @@
+ 	dev_put(dev);  
+ 	return 0;
+ }
++#endif
+ 
+ //获取连接记录返回1
+ int get_entry(struct sk_buff *skb,struct conn_entry** pp_entry,int direc)
+diff -urN napt66-0.2/napt66_conntrack.h napt66-trunk/napt66_conntrack.h
+--- napt66-0.2/napt66_conntrack.h	2011-05-22 15:40:01.000000000 +0800
++++ napt66-trunk/napt66_conntrack.h	2012-03-13 10:09:47.798424805 +0800
+@@ -9,6 +9,7 @@
+ #include <linux/types.h>
+ #include <net/ipv6.h>
+ #include <linux/socket.h>
++#include <linux/version.h>
+ 
+ 
+ #include "napt66_global.h"
+diff -urN napt66-0.2/.svn/all-wcprops napt66-trunk/.svn/all-wcprops
+--- napt66-0.2/.svn/all-wcprops	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/all-wcprops	2012-03-13 10:09:47.802424964 +0800
+@@ -0,0 +1,95 @@
++K 25
++svn:wc:ra_dav:version-url
++V 22
++/svn/!svn/ver/18/trunk
++END
++Install_guide
++K 25
++svn:wc:ra_dav:version-url
++V 36
++/svn/!svn/ver/14/trunk/Install_guide
++END
++napt66_global.h
++K 25
++svn:wc:ra_dav:version-url
++V 38
++/svn/!svn/ver/14/trunk/napt66_global.h
++END
++napt66_ftp_alg.c
++K 25
++svn:wc:ra_dav:version-url
++V 39
++/svn/!svn/ver/17/trunk/napt66_ftp_alg.c
++END
++Readme
++K 25
++svn:wc:ra_dav:version-url
++V 29
++/svn/!svn/ver/15/trunk/Readme
++END
++napt66_ftp_alg.h
++K 25
++svn:wc:ra_dav:version-url
++V 39
++/svn/!svn/ver/13/trunk/napt66_ftp_alg.h
++END
++napt66_conntrack.c
++K 25
++svn:wc:ra_dav:version-url
++V 41
++/svn/!svn/ver/18/trunk/napt66_conntrack.c
++END
++napt66_nat.c
++K 25
++svn:wc:ra_dav:version-url
++V 35
++/svn/!svn/ver/17/trunk/napt66_nat.c
++END
++napt66_main.c
++K 25
++svn:wc:ra_dav:version-url
++V 36
++/svn/!svn/ver/17/trunk/napt66_main.c
++END
++changelog.txt
++K 25
++svn:wc:ra_dav:version-url
++V 36
++/svn/!svn/ver/17/trunk/changelog.txt
++END
++napt66_nat.h
++K 25
++svn:wc:ra_dav:version-url
++V 35
++/svn/!svn/ver/13/trunk/napt66_nat.h
++END
++napt66_conntrack.h
++K 25
++svn:wc:ra_dav:version-url
++V 41
++/svn/!svn/ver/18/trunk/napt66_conntrack.h
++END
++napt66_main.h
++K 25
++svn:wc:ra_dav:version-url
++V 36
++/svn/!svn/ver/13/trunk/napt66_main.h
++END
++napt66_hash_table.c
++K 25
++svn:wc:ra_dav:version-url
++V 42
++/svn/!svn/ver/13/trunk/napt66_hash_table.c
++END
++Makefile
++K 25
++svn:wc:ra_dav:version-url
++V 31
++/svn/!svn/ver/13/trunk/Makefile
++END
++napt66_hash_table.h
++K 25
++svn:wc:ra_dav:version-url
++V 42
++/svn/!svn/ver/13/trunk/napt66_hash_table.h
++END
+diff -urN napt66-0.2/.svn/entries napt66-trunk/.svn/entries
+--- napt66-0.2/.svn/entries	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/entries	2012-03-13 10:09:47.802424964 +0800
+@@ -0,0 +1,538 @@
++10
++
++dir
++18
++http://napt66.googlecode.com/svn/trunk
++http://napt66.googlecode.com/svn
++
++
++
++2011-06-28T08:14:01.238682Z
++18
++yyg747
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++6e6d281f-48e2-356a-3bba-1beed238765f
++
++Install_guide
++file
++
++
++
++
++2012-03-13T02:09:47.798424Z
++fa88f72194af0faead258e8c38b58ab1
++2011-03-18T10:33:15.130661Z
++14
++yyg747
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++3168
++
++napt66_global.h
++file
++
++
++
++
++2012-03-13T02:09:47.798424Z
++13d7fb26a5d50c2304d1f9d30a69081f
++2011-03-18T10:33:15.130661Z
++14
++yyg747
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++971
++
++napt66_ftp_alg.c
++file
++
++
++
++
++2012-03-13T02:09:47.802424Z
++7df3d9accb4e28e74abb4a466e14345e
++2011-04-10T07:04:36.839973Z
++17
++yyg747
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++8663
++
++Readme
++file
++
++
++
++
++2012-03-13T02:09:47.802424Z
++ac0ed7aed05d473a274c4fe412635f0b
++2011-03-18T12:19:32.161890Z
++15
++Mzweilin@gmail.com
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++1810
++
++napt66_ftp_alg.h
++file
++
++
++
++
++2012-03-13T02:09:47.798424Z
++6d4d099c02a542c769b1d686c842367f
++2011-03-18T09:31:58.891951Z
++13
++mzweilin
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++239
++
++napt66_conntrack.c
++file
++
++
++
++
++2012-03-13T02:09:47.798424Z
++7005609ab4a543657f562701b0701628
++2011-06-28T08:14:01.238682Z
++18
++yyg747
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++9933
++
++napt66_nat.c
++file
++
++
++
++
++2012-03-13T02:09:47.798424Z
++89733033651bdcea90cffdf1d87cf38f
++2011-04-10T07:04:36.839973Z
++17
++yyg747
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++9146
++
++napt66_main.c
++file
++
++
++
++
++2012-03-13T02:09:47.798424Z
++652b551696b6c5502ce38609d62d31f2
++2011-04-10T07:04:36.839973Z
++17
++yyg747
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++4565
++
++changelog.txt
++file
++
++
++
++
++2012-03-13T02:09:47.798424Z
++d310109e6da76b6c80a1464a106e247a
++2011-04-10T07:04:36.839973Z
++17
++yyg747
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++83
++
++napt66_nat.h
++file
++
++
++
++
++2012-03-13T02:09:47.798424Z
++4c093daf3d48c43b3eb91e5735fb59d9
++2011-03-18T09:31:58.891951Z
++13
++mzweilin
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++456
++
++napt66_conntrack.h
++file
++
++
++
++
++2012-03-13T02:09:47.798424Z
++ecfee67a0df4ed42b2fabef012bb297c
++2011-06-28T08:14:01.238682Z
++18
++yyg747
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++473
++
++napt66_main.h
++file
++
++
++
++
++2012-03-13T02:09:47.798424Z
++9db2804df49636ae37b4d3e389eccc09
++2011-03-18T09:31:58.891951Z
++13
++mzweilin
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++633
++
++napt66_hash_table.c
++file
++
++
++
++
++2012-03-13T02:09:47.802424Z
++853e78c4aca177328ca04f5f7cd307de
++2011-03-18T09:31:58.891951Z
++13
++mzweilin
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++5229
++
++Makefile
++file
++
++
++
++
++2012-03-13T02:09:47.802424Z
++0cadf181274f1eee1abe8079888b8a80
++2011-03-18T09:31:58.891951Z
++13
++mzweilin
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++458
++
++napt66_hash_table.h
++file
++
++
++
++
++2012-03-13T02:09:47.802424Z
++ab81f3f1fd7e94b034926e6ba1d3fc58
++2011-03-18T09:31:58.891951Z
++13
++mzweilin
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++601
++
+diff -urN napt66-0.2/.svn/text-base/changelog.txt.svn-base napt66-trunk/.svn/text-base/changelog.txt.svn-base
+--- napt66-0.2/.svn/text-base/changelog.txt.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/changelog.txt.svn-base	2012-03-13 10:09:47.753439198 +0800
+@@ -0,0 +1,5 @@
++2011.4.10
++	fix a bug about TCP checksum 
++
++NAPT66_v1.1
++	fix some bugs about FTP-ALG
+diff -urN napt66-0.2/.svn/text-base/Install_guide.svn-base napt66-trunk/.svn/text-base/Install_guide.svn-base
+--- napt66-0.2/.svn/text-base/Install_guide.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/Install_guide.svn-base	2012-03-13 10:09:47.751851076 +0800
+@@ -0,0 +1,91 @@
++Build a NAPT66 Router with GNU/Linux
++
++This guide will help you build a NAPT66 router quickly if you have complete knowledge on IPv4 NAT and IPv6.
++
++1. First, we have to modify the Linux kernel codes.
++
++Since kernel team don't think NAPT66 is a good idea, they have made some limitations on IPv6. That is, an IPv6 device couldn't be a router and a host meanwhile. 
++
++The simplest way to cancel this limitation is deleting two lines in 'net/ipv6/ip6_output.c' and rebuilding the kernel.
++
++/*    if (net->ipv6.devconf_all->forwarding == 0)*/
++/*        goto error;*/ 
++
++
++
++2. Build the NAPT66 module and install it.
++
++Download the codes from SourceForge.net or our site napt66.buptcs.cn.
++# make
++# insmod napt66.ko wan_if=eth0
++
++The 'eth0' is an interface connecting the external IPv6 network (e.g. provided by an ISP). Next, set an IPv6 address 'fc00:0101:0101::1' (just like '192.168.1.1' in IPv4) on 'eth1', the interface connecting the internal IPv6 network.
++
++The device can do NAPT66 now but we have to manually edit the IPv6 connection on each host. Actually Radvd and Dnsmasq can help us do that.
++
++
++
++3. Install Radvd.
++
++IPv6 has involved two schemes to automatically configure hosts: the stateful one DHCPv6, and the stateless one Router Advertisement. Since the stateless one is more compatible, we had better turn to Radvd.
++
++To cooperate the modification of Linux kernel, we have to modify the codes of Radvd too. Delete four lines in 'radvd-1.6/radvd.c'.
++
++int
++check_ip6_forwarding(void)
++{
++......
++//    if (value != 1) {
++//        flog(LOG_DEBUG, "IPv6 forwarding setting is: %u, should be 1", value);
++//        return(-1);
++//    }
++......
++}
++
++Then build, install and configure Radvd. You can take this as a reference.
++
++#/etc/radvd.conf
++interface eth1
++{
++  AdvSendAdvert on;
++  MinRtrAdvInterval 5;
++  MaxRtrAdvInterval 10;
++  #以下两个参数就是以前提到的M和O标记，作用是通知内网计算机网络的地址配置方式
++  AdvManagedFlag off;
++  AdvOtherConfigFlag off;
++  AdvDefaultPreference high;
++  #前缀信息
++  prefix fc00:0101:0101::/64
++  {
++    AdvOnLink on;
++    AdvAutonomous on;
++    AdvRouterAddr on;
++  };
++  #DNS信息
++  RDNSS fc00:0101:0101::1
++  {
++    AdvRDNSSPreference 15;
++    AdvRDNSSOpen on;
++  };
++};
++
++
++4. Install Dnsmasq.
++Dnsmasq is a DNS forwarder for NAT firewalls. You have to Install Dnsmasq since we have define DNS server as 'fc00:0101:0101::1' in 'radvd.conf'. The newest version (maybe dndnsmasq-2.56test18 and later) supports IPv6 well. Build and install Dnsmasq now.
++
++In addition, an advanced usage of Dnsmasq can help us redefine the records of domains.
++
++For example, Dnsmasq will return a specific AAAA record but forward the A record query to the external DNS server due to the configuration below.
++
++#/etc/dnsmasq.conf
++address=/www.youtube.com/2404:6800:8005::65
++server=/www.youtube.com/#
++
++If your NAPT6 router still doesn't work, contact me please.
++
++If you have no time to configure NAPT66, you can use a firmware provided by us. The firmware is NAPT66-ready for Broadcom BCM63xx device (e.g. Shanghai Bell RG100A). Download it from SourceForge.net.
++
++
++Weilin Xu <mzweilin at gmail.com> 
++Beijing Univ. of Posts & Telecom.
++Feb 23, 2011
+diff -urN napt66-0.2/.svn/text-base/Makefile.svn-base napt66-trunk/.svn/text-base/Makefile.svn-base
+--- napt66-0.2/.svn/text-base/Makefile.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/Makefile.svn-base	2012-03-13 10:09:47.796082398 +0800
+@@ -0,0 +1,14 @@
++# Makefile under 2.6.25
++ifneq ($(KERNELRELEASE),)
++#kbuild syntax. dependency relationshsip of files and target modules are listed here.
++obj-m := napt66.o
++napt66-objs := napt66_main.o napt66_conntrack.o napt66_nat.o napt66_hash_table.o napt66_ftp_alg.o
++else
++PWD  := $(shell pwd)
++KVER ?= $(shell uname -r)
++KDIR := /lib/modules/$(KVER)/build
++all:
++	$(MAKE) -C $(KDIR) M=$(PWD) modules
++clean:
++	rm -rf .*.cmd *.o *.mod.c *.ko .tmp_versions *.symvers *.order
++endif
+diff -urN napt66-0.2/.svn/text-base/napt66_conntrack.c.svn-base napt66-trunk/.svn/text-base/napt66_conntrack.c.svn-base
+--- napt66-0.2/.svn/text-base/napt66_conntrack.c.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/napt66_conntrack.c.svn-base	2012-03-13 10:09:47.669428874 +0800
+@@ -0,0 +1,370 @@
++#include "napt66_conntrack.h"
++
++#define MAX_ID 60000
++#define MIN_ID 2048
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)
++#define LINUX2635
++#endif
++
++extern char *wan_if;
++extern struct in6_addr wan_ipv6;
++extern int hash_add_entry(struct conn_entry* p_entry);
++extern struct conn_entry* hash_search_ct(int direc,struct conn_entry* p_entry);
++extern long time(void* ptr);
++extern bool inet6_addr_flag;
++
++int in_cksum(u_int16_t *addr, int len)
++{
++	int sum;
++	sum = 0;
++
++	while (len > 1){
++   	sum += *addr++;
++      len -= 2;
++   }
++   if (len == 1){
++      sum += htons(*(unsigned char *)addr << 8);
++   }
++   
++   return (sum);
++}
++
++
++int find_conflict(struct conn_entry* pkt_entry)
++{
++	struct conn_entry* p_entry;
++	//查一下wan端口是否已被占用。虽然新建连接是在snat中完成的，但查冲突的参数是rsnat
++	p_entry = hash_search_ct(RSNAT,pkt_entry);
++	
++	if(p_entry == NULL)
++		return 0;
++	else
++		return 1;
++}
++
++int get_random_id(void){
++	u16 rnd;
++	do{
++		get_random_bytes(&rnd,sizeof(rnd));
++	}while(rnd < MIN_ID || rnd > MAX_ID);
++
++	return rnd;
++}
++
++//获得一个可用表项，包含了可用的ＷＡＮ信息
++struct conn_entry* get_free_ct(struct conn_entry* pkt_entry)
++{
++	int status;
++	u_int32_t sub_sum = 0;
++	struct conn_entry* p_new_entry;
++
++	pkt_entry->wan_ipv6 = wan_ipv6;
++	
++	//在连接数比较少时，内网id已被占用的机率很小。	
++	pkt_entry->wan_id = pkt_entry->lan_id;
++	
++	while(ntohs(pkt_entry->wan_id) < MIN_ID){
++		pkt_entry->wan_id = get_random_id();
++	}
++	while(find_conflict(pkt_entry)){
++		pkt_entry->wan_id = get_random_id();
++	}
++	//获得了不冲突的L4PROTO ID
++
++	//获取校验和差值，填充表项
++	switch(pkt_entry->proto)
++	{
++		case IPPROTO_TCP:
++		case IPPROTO_UDP:
++			sub_sum = in_cksum((u_int16_t *)&pkt_entry->wan_ipv6,16) + in_cksum((u_int16_t *)&pkt_entry->wan_port,2)
++										-in_cksum((u_int16_t *)&pkt_entry->lan_ipv6,16) - in_cksum((u_int16_t *)&pkt_entry->lan_port,2);
++		break;
++		case IPPROTO_ICMPV6:				
++			sub_sum = in_cksum((u_int16_t *)&pkt_entry->wan_ipv6,16) + in_cksum((u_int16_t *)&pkt_entry->wan_id,2)
++										-in_cksum((u_int16_t *)&pkt_entry->lan_ipv6,16) - in_cksum((u_int16_t *)&pkt_entry->lan_id,2);
++		break;
++		default:
++		break;
++	}
++
++	if(sub_sum >> 31 != 0){//负数
++		sub_sum--;
++	}
++
++	while(sub_sum >> 16){
++		sub_sum = (sub_sum & 0xffff) + (sub_sum >> 16);
++	}
++	pkt_entry->sub_sum = sub_sum;
++	pkt_entry->eprt_len_change = 0;
++	pkt_entry->sum_change = 0;
++
++//kcalloc(1,sizeof(struct in6_addr),GFP_KERNEL);//元素个数，元素大小，内存类型
++	p_new_entry = (struct conn_entry*)kcalloc(1,sizeof(struct conn_entry),GFP_KERNEL);	
++	memcpy(p_new_entry,pkt_entry,sizeof(struct conn_entry));
++
++	status = hash_add_entry(p_new_entry);
++	if(status == 0){
++		printk(KERN_INFO "hash_add_entry(p_new_entry) failed\n");
++		return NULL;
++	}
++	
++	return p_new_entry;
++}
++
++//根据报文方向填充连接信息。成功返回1，不成功返回0
++int conn_init(struct sk_buff *skb,struct conn_entry* entry,int direc)
++{
++	struct ipv6hdr* ip6_h = ipv6_hdr(skb);
++	struct ipv6hdr* pl_ipv6_header;
++	struct ipv6_opt_hdr* ip6e_h;
++	struct udphdr* udp_h;
++	struct tcphdr* pl_tcp_header;
++	struct icmp6hdr* icmpv6_h;
++	struct icmp6hdr* pl_icmpv6_header;
++	u_int8_t proto;
++	u_int16_t hlen;
++
++	entry->time = 0;
++		
++	hlen = sizeof(struct ipv6hdr);
++	proto = ip6_h->nexthdr;//uint8_t  ip6_un1_nxt;	
++	
++	/*关键一步：对分片数据包进行重组*/
++  	if (0 != skb_linearize(skb)) {
++   	return NF_ACCEPT;
++   }
++	
++	
++	while(1){
++		switch (proto) {
++			case IPPROTO_HOPOPTS:
++			case IPPROTO_ROUTING:
++			case IPPROTO_DSTOPTS:
++				ip6e_h = (struct ipv6_opt_hdr*)((char *)ip6_h + hlen);
++				
++				proto = ip6e_h->nexthdr;
++				hlen += ip6e_h->hdrlen * 8;//u_int8_t ip6e_len;
++				printk(KERN_INFO "发现扩展报头\n");
++				break;
++
++			case IPPROTO_FRAGMENT:
++				//printf("Find fragment.\n");
++				return 0;
++				break;
++
++			case IPPROTO_UDP://报头端口位置相同
++			case IPPROTO_TCP:
++				entry->proto = proto;	
++				udp_h = (struct udphdr*)((char *)ip6_h + hlen);			
++				entry->proto_offset = hlen;//记下四层协议报头的偏移值（基于IPv6报头）	
++				
++				if(direc == SNAT){//填充LAN信息
++					entry->lan_ipv6 = ip6_h->saddr;
++#ifdef __FAVOR_BSD
++					entry->lan_port = udp_h->uh_sport;
++					entry->dport = udp_h->uh_dport;
++#else
++					entry->lan_port = udp_h->source;
++					entry->dport = udp_h->dest;
++#endif
++
++				}
++				else{//填充WAN信息
++					entry->wan_ipv6 = ip6_h->daddr;
++#ifdef __FAVOR_BSD
++					entry->wan_port = udp_h->uh_dport;
++#else
++					entry->wan_port = udp_h->dest;
++#endif			
++				}
++				
++				return 1;
++				break;
++			case IPPROTO_ICMPV6:
++				entry->proto = proto;
++				
++				icmpv6_h = (struct icmp6hdr*)((char *)ip6_h + hlen);
++				entry->proto_offset = hlen;//记下四层协议报头的偏移值（基于IPv6报头）
++				if((icmpv6_h->icmp6_type) != ICMPV6_ECHO_REQUEST
++					&& (icmpv6_h->icmp6_type) != ICMPV6_ECHO_REPLY
++					&& (icmpv6_h->icmp6_type) != ICMPV6_DEST_UNREACH
++					&& (icmpv6_h->icmp6_type) != ICMPV6_PKT_TOOBIG
++					&& (icmpv6_h->icmp6_type) != ICMPV6_TIME_EXCEED
++					&& (icmpv6_h->icmp6_type) != ICMPV6_PARAMPROB){
++					//分别处理四种错误报文
++					//printf("ICMPv6 type can't be deal with.\n");
++					return 0;
++				}
++				
++				if(direc == SNAT){
++					entry->lan_ipv6 = ip6_h->saddr;
++					entry->lan_id = icmpv6_h->icmp6_identifier;
++				}
++				else{
++				
++				/*针对上面的类型，决定怎么填入id字段*/
++				/*echo正常填入，否则填入负载中的id字段*/
++				/*问题：如果是tcp等其他协议，对表项设置为tcp*/
++					
++					/*正确报文，正常传输*/
++					if(icmpv6_h->icmp6_type == ICMPV6_ECHO_REQUEST
++					||	icmpv6_h->icmp6_type == ICMPV6_ECHO_REPLY){
++						entry->wan_ipv6 = ip6_h->daddr;
++						entry->wan_id = icmpv6_h->icmp6_identifier;//id	
++					}
++					/*负载中如果是ICMPv6，则将负载中的源地址和id填入wan表项*/
++					/*负载如果是tcp/udp，则将负载中的源地址和端口填入wan表项*/
++					else {
++						pl_ipv6_header = (struct ipv6hdr *)((char *)icmpv6_h + 8);
++						if(pl_ipv6_header->nexthdr == IPPROTO_ICMPV6){
++							pl_icmpv6_header = (struct icmp6hdr*)((char *)pl_ipv6_header + 40);
++							entry->wan_ipv6 = pl_ipv6_header->saddr;
++							entry->wan_id = pl_icmpv6_header->icmp6_identifier;
++						}
++						else if(pl_ipv6_header->nexthdr == IPPROTO_TCP){
++							pl_tcp_header = (struct tcphdr*)((char *)pl_ipv6_header + 40);
++							entry->wan_ipv6 = pl_ipv6_header->saddr;
++							entry->wan_port = pl_tcp_header->source;
++							entry->proto = IPPROTO_TCP;
++						}
++						else if(pl_ipv6_header->nexthdr == IPPROTO_UDP){
++							pl_tcp_header = (struct tcphdr*)((char *)pl_ipv6_header + 40);
++							entry->wan_ipv6 = pl_ipv6_header->saddr;
++							entry->wan_port = pl_tcp_header->source;
++							entry->proto = IPPROTO_UDP;
++						}
++						else {
++							return 0;
++						}
++					}
++				}				
++				
++				return 1;
++				break;
++			default:
++				//printf("Unknown protocol.\n");
++				return 0;
++				break;
++		}//switch(proto)
++		
++	}//while(1)
++}
++
++/*
++
++*/
++
++#ifdef LINUX2635
++/*kernel>=2.6.35*/
++/*Modified by woshiyuhao0819@gmail.com to support the kernel 2.6.35 or upper*/
++int get_ip6_by_name(char* if_name,struct in6_addr* p_ipv6)
++{
++	struct net_device *dev;
++	struct net *net = NULL;
++	struct socket *sock;
++	struct inet6_dev *in_dev6;
++	struct inet6_ifaddr *ifa6 = NULL;
++	struct list_head* list_head_ipv6 = NULL;
++	struct list_head* temp;
++	sock_create_kern(PF_INET6, SOCK_DGRAM, 0,&sock);
++	net = sock_net((const struct sock *)sock->sk);
++	dev = dev_get_by_name(net,if_name);
++	
++	in_dev6 = (struct inet6_dev *)dev->ip6_ptr;
++	
++	while (in_dev6){
++		temp=&(in_dev6->addr_list);
++		list_for_each(list_head_ipv6,temp)
++		{
++			ifa6=list_entry(list_head_ipv6,struct inet6_ifaddr,if_list);
++			if(ifa6)
++				if(ifa6->scope == IPV6_ADDR_ANY){
++					(*p_ipv6) = ifa6->addr;//addr即为eth0接口的v6地址
++					dev_put(dev);
++					return 1;
++				}
++		}
++	in_dev6 = in_dev6->next;
++	}
++
++	dev_put(dev);  
++	return 0;
++}
++#else
++/*other kernel*/
++int get_ip6_by_name(char* if_name,struct in6_addr* p_ipv6)
++{
++	struct net_device *dev;
++	struct net *net = NULL;
++	struct socket *sock;
++	struct inet6_dev *in_dev6;
++	struct inet6_ifaddr *ifa6 = NULL;
++
++	sock_create_kern(PF_INET6, SOCK_DGRAM, 0,&sock);
++	net = sock_net((const struct sock *)sock->sk);
++	dev = dev_get_by_name(net,if_name);
++	
++	in_dev6 = (struct inet6_dev *)dev->ip6_ptr;
++	
++	while (in_dev6){
++    	ifa6 = in_dev6->addr_list;
++      while (ifa6){			
++			if(ifa6->scope == IPV6_ADDR_ANY){	
++				(*p_ipv6) = ifa6->addr;//addr即为eth0接口的v6地址
++				dev_put(dev); 
++				return 1;
++			}
++         ifa6 = ifa6->if_next;
++		}      
++		in_dev6 = in_dev6->next;
++	}   
++	dev_put(dev);  
++	return 0;
++}
++#endif
++
++//获取连接记录返回1
++int get_entry(struct sk_buff *skb,struct conn_entry** pp_entry,int direc)
++{
++	struct conn_entry pkt_entry;//临时变量
++	struct conn_entry* p_entry;
++	int status;
++	*pp_entry = NULL;	
++
++	if(inet6_addr_flag == false){
++		status = get_ip6_by_name(wan_if,&wan_ipv6);
++		if(status <= 0){
++			printk(KERN_INFO "get_ip6_by_name() failed.\n");
++			return 0;
++		}
++		printk(KERN_INFO "get_ip6_by_name() succeed.\n");
++		inet6_addr_flag = true;
++	}
++
++	status = conn_init(skb,&pkt_entry,direc);
++	if(status == 0)
++		return 0;//不能处理的ＩＣＭＰＶ6包类型或其他类型，Ａccept，让协议栈自己处理。
++
++	p_entry = hash_search_ct(direc,&pkt_entry);
++
++	if(direc == SNAT){
++		if(p_entry == NULL){//ＳＮＡＴ找不到连接，新建一个
++			p_entry = get_free_ct(&pkt_entry);	
++			if(p_entry == NULL){//ＳＮＡＴ获取新连接失败
++				//printf("ＳＮＡＴ获取新连接失败\n");
++				return -1;//连接找不到可用端口外发数据，这种情况很难发生。
++			}
++		}
++	}
++	else{//RSNAT
++		if(p_entry == NULL){//RＳＮＡＴ找不到连接，丢弃包
++			//printf("RＳＮＡＴ找不到连接，丢弃包\n");
++			return -1;//数据包连接无记录，不被接受。
++		}		
++	}
++	//time()的内核ＡＰＩ
++	p_entry->time = time(NULL);
++	*pp_entry = p_entry;
++	return 1;
++}
+diff -urN napt66-0.2/.svn/text-base/napt66_conntrack.h.svn-base napt66-trunk/.svn/text-base/napt66_conntrack.h.svn-base
+--- napt66-0.2/.svn/text-base/napt66_conntrack.h.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/napt66_conntrack.h.svn-base	2012-03-13 10:09:47.753439198 +0800
+@@ -0,0 +1,18 @@
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/skbuff.h>
++#include <linux/ip.h>                  
++#include <linux/ipv6.h>
++#include <linux/netfilter.h>
++#include <linux/netfilter_ipv6.h>
++#include <linux/in6.h>
++#include <linux/types.h>
++#include <net/ipv6.h>
++#include <linux/socket.h>
++#include <linux/version.h>
++
++
++#include "napt66_global.h"
++
++int get_entry(struct sk_buff *skb,struct conn_entry** pp_entry,int direc);
++int in_cksum(u_int16_t *addr, int len);
+diff -urN napt66-0.2/.svn/text-base/napt66_ftp_alg.c.svn-base napt66-trunk/.svn/text-base/napt66_ftp_alg.c.svn-base
+--- napt66-0.2/.svn/text-base/napt66_ftp_alg.c.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/napt66_ftp_alg.c.svn-base	2012-03-13 10:09:47.796082398 +0800
+@@ -0,0 +1,380 @@
++#include "napt66_ftp_alg.h"
++
++
++#ifdef SPRINTF_CHAR
++# define SPRINTF(x) strlen(sprintf x)
++#else
++# define SPRINTF(x) ((size_t)sprintf x)
++#endif
++
++#define NS_INT16SZ      2       /* #/bytes of data in a u_int16_t */
++
++extern long time(void* ptr);
++extern struct conn_entry* hash_search_ct(int direc,struct conn_entry* p_entry);
++extern struct conn_entry* get_free_ct(struct conn_entry* pkt_entry);
++
++
++static int getbits(const char *src, int *bitsp) 
++{
++	static const char digits[] = "0123456789";
++	int n;
++	int val;
++	char ch;
++
++	val = 0;
++	n = 0;
++	while ((ch = *src++) != '\0') {
++		const char *pch;
++
++		pch = strchr(digits, ch);
++		if (pch != NULL) {
++			if (n++ != 0 && val == 0)       /* no leading zeros */
++				return 0;
++			val *= 10;
++			val += (pch - digits);
++			if (val > 128)                  /* range */
++				return 0;
++			continue;
++		}
++		return 0;
++	}
++	if (n == 0)
++		    return 0;
++	*bitsp = val;
++	return 1;
++}
++
++
++/*将字符串类型IPv6地址更改为in6_addr结构体类型*/
++static int inet_net_pton_ipv6(const char *src,struct in6_addr *dst, size_t size) 
++{
++	static const char xdigits_l[] = "0123456789abcdef",
++		              xdigits_u[] = "0123456789ABCDEF";
++	u_char tmp[INET6_ADDRSTRLEN], *tp, *endp, *colonp;
++	const char *xdigits, *curtok;
++	int ch, saw_xdigit;
++	u_int val;
++	int digits;
++	int bits;
++	size_t bytes;
++	int words;
++	int ipv4;
++
++	memset((tp = tmp), '\0', INET6_ADDRSTRLEN);
++	endp = tp + INET6_ADDRSTRLEN;
++	colonp = NULL;
++	/* Leading :: requires some special handling. */
++	if (*src == ':')
++		if (*++src != ':')
++			goto enoent;
++	curtok = src;
++	saw_xdigit = 0;
++	val = 0;
++	digits = 0;
++	bits = -1;
++	ipv4 = 0;
++	while ((ch = *src++) != '\0') {
++		const char *pch;
++
++		if ((pch = strchr((xdigits = xdigits_l), ch)) == NULL)
++			pch = strchr((xdigits = xdigits_u), ch);
++			if (pch != NULL) {
++			   val <<= 4;
++			   val |= (pch - xdigits);
++			   if (++digits > 4)
++			           goto enoent;
++			   saw_xdigit = 1;
++			   continue;
++			}
++			if (ch == ':') {
++				curtok = src;
++				if (!saw_xdigit) {
++					if (colonp)
++						goto enoent;
++					colonp = tp;
++					continue;
++				} else if (*src == '\0')
++						goto enoent;
++				if (tp + NS_INT16SZ > endp)
++						return (0);
++				*tp++ = (u_char) (val >> 8) & 0xff;
++				*tp++ = (u_char) val & 0xff;
++				saw_xdigit = 0;
++				digits = 0;
++				val = 0;
++				continue;
++			}
++			if (ch == '.' && ((tp + INET6_ADDRSTRLEN) <= endp)) {
++				tp += INET6_ADDRSTRLEN;
++				saw_xdigit = 0;
++				ipv4 = 1;
++				break;  /* '\0' was seen by inet_pton4(). */
++			}
++			if (ch == '/' && getbits(src, &bits) > 0)
++				break;
++			goto enoent;
++	}
++	if (saw_xdigit) {
++		if (tp + NS_INT16SZ > endp)
++			goto enoent;
++		*tp++ = (u_char) (val >> 8) & 0xff;
++		*tp++ = (u_char) val & 0xff;
++	}
++	if (bits == -1)
++		bits = 128;
++
++	words = (bits + 15) / 16;
++	if (words < 2)
++		words = 2;
++	if (ipv4)
++		words = 8;
++	endp =  tmp + 2 * words;
++
++	if (colonp != NULL) {
++		const int n = tp - colonp;
++		int i;
++
++		if (tp == endp)
++			goto enoent;
++		for (i = 1; i <= n; i++) {
++			endp[- i] = colonp[n - i];
++			colonp[n - i] = 0;
++		}
++		tp = endp;
++	}
++	if (tp != endp)
++		goto enoent;
++
++	bytes = (bits + 7) / 8;
++	if (bytes > size)
++		goto emsgsize;
++	memcpy(dst, tmp, bytes);
++	return (bits);
++
++	enoent:
++	return (-1);
++
++	emsgsize:
++	return (-1);
++}
++
++/*将in6_addr结构体类型IPv6地址更改为字符串类型*/
++static char *inet_net_ntop_ipv6(const u_char *src, int bits, char *dst, size_t size) 
++{
++	u_int   m;
++	int     b;
++	int     p;
++	int     zero_s, zero_l, tmp_zero_s, tmp_zero_l;
++	int     i;
++	int     is_ipv4 = 0;
++	unsigned char inbuf[16];
++	char outbuf[sizeof("xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:255.255.255.255/128")];
++	char    *cp;
++	int     words;
++	u_char  *s;
++
++	cp = outbuf;
++
++	if(bits == 0){
++		*cp++ = ':';
++		*cp++ = ':';
++		*cp = '\0';
++	} 
++	else{
++		/* Copy src to private buffer.  Zero host part. */
++		p = (bits + 7) / 8;
++		memcpy(inbuf, src, p);
++		memset(inbuf + p, 0, 16 - p);
++		b = bits % 8;
++		if (b != 0) {
++			m = ~0 << (8 - b);
++			inbuf[p-1] &= m;
++		}
++
++		s = inbuf;
++
++		/* how many words need to be displayed in output */
++		words = (bits + 15) / 16;
++		if(words == 1)
++			words = 2;
++
++		/* Find the longest substring of zero's */
++		zero_s = zero_l = tmp_zero_s = tmp_zero_l = 0;
++		for (i = 0; i < (words * 2); i += 2) {
++			if ((s[i] | s[i+1]) == 0) {
++				if (tmp_zero_l == 0)
++					tmp_zero_s = i / 2;
++				tmp_zero_l++;
++			} 
++			else{
++				if (tmp_zero_l && zero_l < tmp_zero_l) {
++					zero_s = tmp_zero_s;
++					zero_l = tmp_zero_l;
++					tmp_zero_l = 0;
++				}
++			}
++		}
++
++		if (tmp_zero_l && zero_l < tmp_zero_l) {
++			zero_s = tmp_zero_s;
++			zero_l = tmp_zero_l;
++		}
++
++		if (zero_l != words && zero_s == 0 && ((zero_l == 6) ||
++		  ((zero_l == 5 && s[10] == 0xff && s[11] == 0xff) ||
++		  ((zero_l == 7 && s[14] != 0 && s[15] != 1)))))
++				is_ipv4 = 1;
++
++		/* Format whole words. */
++		for (p = 0; p < words; p++) {
++			if (zero_l != 0 && p >= zero_s && p < zero_s + zero_l) {
++				/* Time to skip some zeros */
++				if (p == zero_s)
++					*cp++ = ':';
++				if (p == words - 1)
++					*cp++ = ':';
++				s++;
++				s++;
++				continue;
++			}
++
++			if (is_ipv4 && p > 5 ) {
++				*cp++ = (p == 6) ? ':' : '.';
++				cp += SPRINTF((cp, "%u", *s++));
++				/* we can potentially drop the last octet */
++				if (p != 7 || bits > 120) {
++					*cp++ = '.';
++					cp += SPRINTF((cp, "%u", *s++));
++				}
++			} 
++			else{
++				if(cp != outbuf)
++					*cp++ = ':';
++				cp += SPRINTF((cp, "%x", *s * 256 + s[1]));
++				s += 2;
++			}
++		}
++	}
++
++	if (strlen(outbuf) + 1 > size)
++		    goto emsgsize;
++	strcpy(dst, outbuf);
++
++	return (dst);
++
++	emsgsize:
++	return (NULL);
++}
++
++/*对EPRT命令的提取分析以及修改*/
++int analysis_eprt(struct sk_buff *skb,struct conn_entry *entry)
++{
++	struct ipv6hdr* ipv6_header;
++	struct tcphdr* tcp_header;
++	u_int16_t eprt_old_port = 0;
++	struct in6_addr eprt_old_addr;
++	char ftp_ptr[200];
++
++	
++	struct conn_entry new_entry;
++	struct conn_entry* n_entry;
++	
++	char eprt_new_command[100];
++	char eprt_new_addr[INET6_ADDRSTRLEN];
++	char eprt_new_port[10];
++	
++	u_int16_t eprt_old_len;
++	u_int16_t eprt_new_len;
++	u_int16_t temp_port;
++	
++	int i = 0,j = 0,k = 0;
++	char port[10];
++	char ip6_address[INET6_ADDRSTRLEN] = "0";
++
++	ipv6_header = ipv6_hdr(skb);
++	tcp_header = (struct tcphdr*)((char*)ipv6_header + entry->proto_offset);
++	
++	eprt_old_len = ntohs(ipv6_header->payload_len) - (int)(tcp_header->doff * 4);
++	
++	/*是否存在FTP命令*/
++	if(eprt_old_len > 0){	
++		memcpy(ftp_ptr,(unsigned char *)tcp_header + (tcp_header->doff * 4),eprt_old_len);
++			
++		/*如果不是EPRT命令，则返回0*/
++		if(strncmp(ftp_ptr,"EPRT",4) != 0) 
++			return 0;
++		/*提取EPRT命令*/
++		else {	
++		//printk("eprt cmd before nat is:%s\n",ftp_ptr);
++			i = 8;
++			while(ftp_ptr[i] != '|'){
++				ip6_address[j] = ftp_ptr[i];
++				j++;
++				i++;
++			}
++			i++;
++			while(ftp_ptr[i] != '|'){
++				port[k] = ftp_ptr[i];
++				k++;
++				i++;
++			}
++
++			/*将字符串地址改为主机字节序,并且保存端口号 即pton*/
++			inet_net_pton_ipv6(ip6_address,&eprt_old_addr,sizeof(struct in6_addr));
++			/*将字符型端口号转换为长整数*/
++			eprt_old_port = simple_strtol(port,NULL,eprt_old_port);	
++		}
++	}
++	else {
++		/*不存在FTP命令*/
++		return 2;
++	}
++	
++	/*通过分析的EPRT命令建立新的连接表项，处理之后由服务器发起的数据连接*/
++	new_entry.proto = IPPROTO_TCP;
++	new_entry.lan_ipv6 = eprt_old_addr;
++	new_entry.lan_port = htons(eprt_old_port);	
++
++	n_entry = hash_search_ct(SNAT,&new_entry);
++	if(n_entry == NULL){
++		n_entry = get_free_ct(&new_entry);
++	}
++		
++	n_entry->proto_offset = 40;				
++	n_entry->time = time(NULL);		
++
++	/*
++		将端口号由整数类型转换为字符串形式
++		在转换为字符串之前需要将n_entry表项中的网络字节序转换为主机字节序
++	*/
++	temp_port = ntohs(n_entry->wan_port);
++	//printk("entry wan port is %d\n",n_entry->wan_port);	
++		
++	/*ntop函数结果为相应的主机序字符串，所以之前并不需要额外的字节序转换*/
++	inet_net_ntop_ipv6((char *)(&(n_entry->wan_ipv6)),128,eprt_new_addr,128);
++	snprintf(eprt_new_port,sizeof(eprt_new_port),"%d",temp_port);					
++
++	eprt_new_len = sprintf(eprt_new_command,"EPRT |2|%s|%s|\r\n",eprt_new_addr,eprt_new_port);
++
++	/*保存每次EPRT长度变化的累计值*/
++	entry->sum_change += entry->eprt_len_change;
++	entry->eprt_len_change = eprt_new_len - eprt_old_len;
++	
++	//printk("eprt len change is %d\n",entry->eprt_len_change);
++
++	if(entry->eprt_len_change > 0){
++	/*skb_put和skb_trim函数对skb长度进行调整*/
++		skb_put(skb,entry->eprt_len_change);
++	}
++	else if(entry->eprt_len_change < 0){
++		skb_trim(skb,skb->len + entry->eprt_len_change);
++	}
++
++	/*构造新的EPRT命令报文*/
++	memcpy((unsigned char *)tcp_header + (tcp_header->doff * 4),eprt_new_command,eprt_new_len);
++	
++//	printk("new eprt cmd is:%s\n",eprt_new_command);
++	return 1;				
++	
++}
++
+diff -urN napt66-0.2/.svn/text-base/napt66_ftp_alg.h.svn-base napt66-trunk/.svn/text-base/napt66_ftp_alg.h.svn-base
+--- napt66-0.2/.svn/text-base/napt66_ftp_alg.h.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/napt66_ftp_alg.h.svn-base	2012-03-13 10:09:47.603628822 +0800
+@@ -0,0 +1,9 @@
++#include <linux/types.h>
++#include <linux/inet.h>
++#include <linux/kernel.h>
++#include <linux/string.h>
++#include <linux/in6.h>
++#include <net/ipv6.h>
++#include "napt66_global.h"
++
++int analysis_eprt(struct sk_buff *skb,struct conn_entry *entry);
+diff -urN napt66-0.2/.svn/text-base/napt66_global.h.svn-base napt66-trunk/.svn/text-base/napt66_global.h.svn-base
+--- napt66-0.2/.svn/text-base/napt66_global.h.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/napt66_global.h.svn-base	2012-03-13 10:09:47.751851076 +0800
+@@ -0,0 +1,44 @@
++#define SNAT 1
++#define RSNAT 0
++
++#define HASHRANGE 3540
++#define HASHNUMBER 3533
++#define CLEANUP_TIME 20
++
++struct hash_entry;
++
++struct conn_entry{
++	u_int8_t proto;
++	int proto_offset;
++	struct hash_entry* source;//引用该连接项在source_table的hash链节
++	struct hash_entry* ipproto;//引用该连接项在ipproto_table的hash链节
++	struct in6_addr lan_ipv6;
++	union{
++		u_int16_t port;
++		u_int16_t id;
++	}lan_l4_info;
++	struct in6_addr wan_ipv6;
++	union{
++		u_int16_t port;
++		u_int16_t id;
++	}wan_l4_info;
++	int time;
++	u_int16_t sub_sum;
++	
++	u_int16_t dport;
++	//eprt_len_change如果不为0，表示为eprt命令之后的控制连接
++	int eprt_len_change;
++	//sum_change用于累计每次修改EPRT之后的变化值
++	int sum_change;
++	
++};
++#define lan_port lan_l4_info.port
++#define lan_id lan_l4_info.id
++#define wan_port wan_l4_info.port
++#define wan_id wan_l4_info.id
++
++struct hash_entry{
++	struct hash_entry* next;
++	struct hash_entry* prev;
++	struct conn_entry* conntrack_entry;
++};
+diff -urN napt66-0.2/.svn/text-base/napt66_hash_table.c.svn-base napt66-trunk/.svn/text-base/napt66_hash_table.c.svn-base
+--- napt66-0.2/.svn/text-base/napt66_hash_table.c.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/napt66_hash_table.c.svn-base	2012-03-13 10:09:47.753439198 +0800
+@@ -0,0 +1,152 @@
++#include "napt66_hash_table.h"
++
++extern struct hash_entry source_table[HASHRANGE];
++extern struct hash_entry ipproto_table[HASHRANGE];
++extern long time(void* ptr);
++
++void hash_table_init(struct hash_entry* table)
++{
++	int i;
++	printk(KERN_INFO "hash_table_init()\n");	
++	for(i = 0; i < HASHRANGE; i++){
++		table[i].next = NULL;
++		table[i].prev = NULL;
++		table[i].conntrack_entry = NULL;
++	}	
++}
++
++//使用elf算法参数哈希值，elf算法用于根据字符串产生哈希值，把key按照协议、地址、端口组成一个字符串，经过运算后得到哈希值。
++int hash(int proto,struct in6_addr ipv6,u_int16_t id)
++{    
++	 unsigned int hash = 0;
++	 int i;
++	 for(i = 0; i < 16; i++){
++	 		hash = hash + ipv6.s6_addr[i];
++	 }
++	 hash = hash + proto + id;
++    return hash%HASHNUMBER;
++}
++
++//将连接项在两张表的位置都删除
++int hash_del_entry(struct conn_entry* p_entry)
++{
++	struct hash_entry *pre_entry = p_entry->source->prev;
++	struct hash_entry *next_entry = p_entry->source->next;
++	//删除source_table中的链节
++	
++	if(next_entry==NULL){//头结点后的第一个链节特殊处理
++		pre_entry->next=NULL;
++	}
++	else{
++		pre_entry->next = next_entry;
++		next_entry->prev = pre_entry; 			
++	}
++	kfree(p_entry->source);//释放内存
++	//删除ipproto_table中的链节
++	pre_entry = p_entry->ipproto->prev;
++	next_entry = p_entry->ipproto->next;
++	if(next_entry==NULL){//头结点后的第一个链节特殊处理
++		pre_entry->next=NULL;
++	}
++	else{
++		pre_entry->next = next_entry;
++		next_entry->prev = pre_entry;
++	}
++	kfree(p_entry->ipproto);//释放内存
++	return 0;
++}
++
++//清理链表中的过期连接，参数是空的哈希头节点，不包含连接信息
++int hash_clean_entry(struct hash_entry* p_hash_entry)
++{
++	struct conn_entry* ct_entry;
++	int cur_time = time(NULL);
++	
++	p_hash_entry = p_hash_entry->next;//跳过空的头节点
++	
++	while(p_hash_entry != NULL){
++		ct_entry = p_hash_entry->conntrack_entry;
++		p_hash_entry = p_hash_entry->next;
++
++		if(cur_time - ct_entry->time > CLEANUP_TIME){//超时
++			hash_del_entry(ct_entry);
++			kfree(ct_entry);
++		}
++	}
++	return 0;
++}
++
++//搜索到则返回指针，否则返回NULL
++struct conn_entry* hash_search_ct(int direc,struct conn_entry* p_entry)
++{
++	int place;
++	struct hash_entry *tmp;
++	if(direc == SNAT){//source	SNAT
++		place = hash(p_entry->proto , p_entry->lan_ipv6 , p_entry->lan_id);//得到哈希值
++		tmp = source_table[place].next;//搜索哈希值对应位置的链表
++		while(tmp != NULL){
++			if(tmp->conntrack_entry->proto == p_entry->proto &&
++				tmp->conntrack_entry->lan_id == p_entry->lan_id &&
++				0 == memcmp(&(tmp->conntrack_entry->lan_ipv6),&(p_entry->lan_ipv6),sizeof(struct in6_addr)))
++				{
++				return tmp->conntrack_entry;//返回搜索结果
++			}
++			tmp = tmp->next;
++	 	 }
++	}
++	else if(direc == RSNAT){//ipproto	RSNAT
++		place = hash(p_entry->proto , p_entry->wan_ipv6 , p_entry->wan_id);//得到哈希值
++		tmp = ipproto_table[place].next;//搜索哈希值对应位置的链表
++		while(tmp != NULL){
++		if(tmp->conntrack_entry->proto == p_entry->proto &&
++			tmp->conntrack_entry->wan_id == p_entry->wan_id &&
++			0 == memcmp(&(tmp->conntrack_entry->wan_ipv6),&(p_entry->wan_ipv6),sizeof(struct in6_addr)))
++			return (*tmp).conntrack_entry;//返回搜索结果
++		tmp = tmp->next;
++		}
++	}	
++	return NULL;
++}
++
++//在两张hash表中插入ct项
++int hash_add_entry(struct conn_entry* p_entry)
++{
++	//把实体地址分别保存到两个新的链节中，然后把链节添加到对应的表中。
++	int source_place,ipproto_place;
++	struct hash_entry *source_entry = (struct hash_entry *)kcalloc(1,sizeof (struct hash_entry),GFP_KERNEL);
++	struct hash_entry *ipproto_entry = (struct hash_entry *)kcalloc(1,sizeof (struct hash_entry),GFP_KERNEL);
++	source_entry->conntrack_entry = p_entry;//保存实体地址到链节
++	ipproto_entry->conntrack_entry = p_entry;//保存实体地址到链节
++	p_entry->source = source_entry;//保存链节地址到实体
++	p_entry->ipproto = ipproto_entry;//保存链节地址到实体
++	//添加到source_table
++	source_place  =  hash(p_entry->proto , p_entry->lan_ipv6 , p_entry->lan_id);//宏直接简化为lan_id
++
++	hash_clean_entry(&source_table[source_place]);//clean应是对称的，执行一次就够。
++	if (source_table[source_place].next==NULL){//如果是第一个新增节点
++	 	 source_table[source_place].next=source_entry;
++	 	 source_entry->next=NULL;
++	 	 source_entry->prev=&source_table[source_place];
++	 }
++	else{
++		 source_entry->next = source_table[source_place].next;
++		 source_entry->next->prev=source_entry;
++		 source_table[source_place].next = source_entry;
++		 source_entry->prev = &source_table[source_place];
++	}
++	//添加到ipproto_table
++	ipproto_place =  hash(p_entry->proto , p_entry->wan_ipv6 , p_entry->wan_id);	
++	hash_clean_entry(&ipproto_table[ipproto_place]);	
++	if (ipproto_table[ipproto_place].next==NULL){//如果是第一个新增节点
++	 	 ipproto_table[ipproto_place].next=ipproto_entry;
++	 	 ipproto_entry->next=NULL;
++	 	 ipproto_entry->prev=&ipproto_table[ipproto_place];
++	 }
++	else{
++		 ipproto_entry->next = ipproto_table[ipproto_place].next;
++		 ipproto_entry->next->prev=ipproto_entry;
++	 	 ipproto_table[ipproto_place].next = ipproto_entry;
++		 ipproto_entry->prev = &ipproto_table[ipproto_place];
++	}	
++	return 1;
++}
+diff -urN napt66-0.2/.svn/text-base/napt66_hash_table.h.svn-base napt66-trunk/.svn/text-base/napt66_hash_table.h.svn-base
+--- napt66-0.2/.svn/text-base/napt66_hash_table.h.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/napt66_hash_table.h.svn-base	2012-03-13 10:09:47.796082398 +0800
+@@ -0,0 +1,22 @@
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/skbuff.h>
++#include <linux/ip.h>                 
++#include <linux/ipv6.h>
++#include <linux/netfilter.h>
++#include <linux/netfilter_ipv6.h>
++#include <linux/in6.h>
++#include <linux/types.h>
++#include <net/ipv6.h>
++#include "napt66_global.h"
++
++#define SOURCE 1
++#define IPPROTO 2
++//外部接口
++
++void hash_table_init(struct hash_entry* table);
++
++//搜索到则返回指针，否则返回NULL
++struct conn_entry* hash_search_ct(int hook,struct conn_entry* p_entry);
++//在两张hash表中插入ct项
++int hash_add_entry(struct conn_entry* p_entry);
+diff -urN napt66-0.2/.svn/text-base/napt66_main.c.svn-base napt66-trunk/.svn/text-base/napt66_main.c.svn-base
+--- napt66-0.2/.svn/text-base/napt66_main.c.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/napt66_main.c.svn-base	2012-03-13 10:09:47.669428874 +0800
+@@ -0,0 +1,140 @@
++#define __NO_VERSION__
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/skbuff.h>
++#include <linux/ip.h>                  
++#include <linux/ipv6.h>
++#include <linux/netfilter.h>
++#include <linux/netfilter_ipv6.h>
++#include <linux/in6.h>
++#include <linux/types.h>
++#include <net/ipv6.h>
++#include "napt66_global.h"
++#include "napt66_main.h"
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("NSRC NAPT66 Team");
++MODULE_DESCRIPTION("IPv6-to-IPv6 Network Address PORT Translation (NAPT66)");
++MODULE_VERSION("V0.1");
++
++/* hooks for out filter*/
++//静态全局变量，作用域是本源文件。
++static struct nf_hook_ops nfho_in;    /* Netfilter钩子，RSNAT */
++static struct nf_hook_ops nfho_out;   /* Netfilter钩子， SNAT */
++
++struct hash_entry source_table[HASHRANGE];
++struct hash_entry ipproto_table[HASHRANGE];
++
++/* module parameters */
++char *wan_if="eth0";  //参数，WAN接口名称
++//module_param(wan_if,charp,S_IRUGO|S_IWUSR); //字符指针，允许所有人读取，允许root写入
++//默认为eth0，如要更改，在挂载模块时输入
++//sudo insmod napt66.ko wan_if="eth1"
++module_param(wan_if,charp,0000); 
++MODULE_PARM_DESC(wan_if, "A character string" );
++
++//WAN接口ipv6地址，新建连接记录时要引用。
++//不知道接口，先手动填入本机eth0的IPv6地址。
++struct in6_addr wan_ipv6;
++bool inet6_addr_flag;
++
++extern int get_entry(struct sk_buff *skb,struct conn_entry** pp_entry,int direc);
++extern int nat(struct sk_buff *skb,struct conn_entry* entry,int direc);
++extern void hash_table_init(struct hash_entry* table);
++
++long time(void* ptr)
++{
++	struct timeval tv;
++	do_gettimeofday(&tv);
++	return tv.tv_sec;	
++}
++
++
++/* the implementation of the hook function at PRE_ROUTING hook point to deal with input data packets */
++unsigned int hook_func_in(unsigned int hooknum,struct sk_buff *skb,const struct net_device *in,
++			const struct net_device *out,int (*okfn)(struct sk_buff *))
++{
++	int status;
++	struct conn_entry* conntrack_entry = NULL;
++
++	//printk(KERN_INFO "device: %s\n",skb->dev->name);	//in设备名称，只处理eth0	
++	if(strncmp(in->name,wan_if,IFNAMSIZ)){
++		return NF_ACCEPT;
++	}
++	if(skb->pkt_type != PACKET_HOST){//通过mac地址过滤不是发往本机的包，
++		//printk(KERN_INFO "host packet.\n");
++		return NF_ACCEPT;
++	}
++
++	status = get_entry(skb,&conntrack_entry,RSNAT);
++
++	if(status > 0){
++		nat(skb,conntrack_entry,RSNAT);
++	}
++
++	return NF_ACCEPT;/* the follow data process as V6 before */
++}
++
++/*  the implementation of the hook function at POST_ROUTING hook point to deal with output data packets */
++unsigned int hook_func_out(unsigned int hooknum,struct sk_buff *skb,const struct net_device *in,
++			const struct net_device *out,int (*okfn)(struct sk_buff *))
++{
++	int status;
++	struct conn_entry* conntrack_entry = NULL;
++
++	
++	//根据设备和IP地址过滤数据包
++	//printk(KERN_INFO "out device: %s\n",((struct dst_entry *)skb->_skb_dst)->dev->name);//out设备名称，只处理eth0
++	if(strncmp(out->name,wan_if,IFNAMSIZ)){
++		return NF_ACCEPT;
++	}
++
++	//判断TCP,UDP,ICMPv6协议。struct sk_buff提供的transport_header只是指明了IPv6报头之后的地址。可能是其他扩展报头。
++
++	status = get_entry(skb,&conntrack_entry,SNAT);
++
++	if(status > 0){
++		nat(skb,conntrack_entry,SNAT);
++	}
++
++	return NF_ACCEPT; /* the follow data process as V6 before*/
++}
++
++/* module initialization function */
++ int init_module()
++{
++	printk(KERN_INFO "Netfilter module for IPv6 NAPT66. <NSRC_NAPT66_TEAM@BUPT,2010>\n");
++	printk(KERN_INFO "TIME 2011.4.10 final\n");
++
++	inet6_addr_flag = false;
++
++	hash_table_init(source_table);
++	hash_table_init(ipproto_table);
++
++	/* Register the hook data */
++	/* RSNAT */
++	nfho_in.hook = hook_func_in;   /* hook function deal with input data to modify the dstif necessary*/
++	nfho_in.hooknum = NF_INET_PRE_ROUTING;/* register the hook at PRE_ROUTING 
++	Note:in linux 2.6.25 is NF_INET_PRE_ROUTING,the earlier kernel is NF_IP6_PRE_ROUTING */
++	nfho_in.pf = PF_INET6; /* just deal with IPv6 packets */
++	nfho_in.priority = NF_IP6_PRI_NAT_DST;   /* dst */
++	nf_register_hook(&nfho_in);
++
++	/* SNAT */
++	nfho_out.hook = hook_func_out;  /* hook function deal with output data to modify the src if necessary*/
++	nfho_out.hooknum = NF_INET_POST_ROUTING;/* register the hook at PRE_ROUTING */
++	nfho_out.pf = PF_INET6;
++	nfho_out.priority = NF_IP6_PRI_NAT_SRC;   /* src */
++	nf_register_hook(&nfho_out);
++
++	return 0;
++}
++
++void cleanup_module()
++{
++	//kfree(g_in_addr_1);
++
++	printk(KERN_INFO "Remove netfilter module for IPv6 NAPT66 . <NSRC_NAPT66_TEAM@BUPT,2010>\n");	
++   nf_unregister_hook(&nfho_in);
++	nf_unregister_hook(&nfho_out);
++}
+diff -urN napt66-0.2/.svn/text-base/napt66_main.h.svn-base napt66-trunk/.svn/text-base/napt66_main.h.svn-base
+--- napt66-0.2/.svn/text-base/napt66_main.h.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/napt66_main.h.svn-base	2012-03-13 10:09:47.753439198 +0800
+@@ -0,0 +1,28 @@
++#ifndef __IPV6_NAT_H__
++#define __IPV6_NAT_H__
++
++#define NAT66_DEBUG
++
++#define PREFIX_LEN 48     /* Global Prefix Length, more see GSE draft  */
++
++#ifdef  NAT66_DEBUG
++#define DBUG(fmt,args...) printk(KERN_DEBUG fmt,##args)
++#else
++#define DBUG(fmt,args...) 
++#endif
++
++#define NIP6_48(addr) \
++        ntohs((addr).s6_addr16[0]), \
++        ntohs((addr).s6_addr16[1]), \
++        ntohs((addr).s6_addr16[2])
++
++#define NIP6(addr) \
++        ntohs((addr).s6_addr16[0]), \
++        ntohs((addr).s6_addr16[1]), \
++        ntohs((addr).s6_addr16[2])
++
++#define NIP6_FMT_48 "%04x:%04x:%04x"
++
++#define NIP6_FMT "%04x:%04x:%04x"
++
++#endif //end of __IPV6_NAT_H__
+diff -urN napt66-0.2/.svn/text-base/napt66_nat.c.svn-base napt66-trunk/.svn/text-base/napt66_nat.c.svn-base
+--- napt66-0.2/.svn/text-base/napt66_nat.c.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/napt66_nat.c.svn-base	2012-03-13 10:09:47.605428773 +0800
+@@ -0,0 +1,299 @@
++#include "napt66_nat.h"
++
++
++#ifdef SPRINTF_CHAR
++# define SPRINTF(x) strlen(sprintf x)
++#else
++# define SPRINTF(x) ((size_t)sprintf x)
++#endif
++
++#define FTP_PORT 0x0015
++
++extern long time(void* ptr);
++extern struct conn_entry* hash_search_ct(int direc,struct conn_entry* p_entry);
++extern int analysis_eprt(struct sk_buff *skb,struct conn_entry *entry);
++extern int in_cksum(u_int16_t *addr, int len);
++extern struct conn_entry* get_free_ct(struct conn_entry* pkt_entry);
++
++/*
++	第二个参数特意设置成32bit整数，以便与函数体内的32bit数协同运算时，正确处理符号位与进位。
++	因为16bit整数的符号位与32bit整数的符号位不是对齐的。
++*/
++u_int16_t adjust_checksum(u_int16_t old_checksum,u_int32_t delta)
++{
++	u_int32_t new_checksum;
++
++	new_checksum = old_checksum - delta;
++	
++	if(new_checksum >> 31 != 0){//负数
++		new_checksum--;
++	}
++
++	while(new_checksum >> 16){
++		new_checksum = (new_checksum & 0xffff) + (new_checksum >> 16);
++	}
++
++	return new_checksum;
++}
++
++u_int16_t calc_checksum(u_int16_t *addr,int length,u_int32_t sum)
++{
++/*	u_int32_t sum = 0;*/
++	
++	while(length > 0){
++		sum += *addr++;
++		length -= 2;
++	}
++	
++	if(length > 0)
++      sum += *(unsigned char *)addr;
++		
++	while(sum >> 16)
++		sum = (sum & 0xffff) + (sum >> 16);
++	return(~sum);
++}
++
++struct in6_addr inet6_addr_ntohs(struct in6_addr *net)
++{
++	struct in6_addr addr6;
++	int i;
++	memcpy(&addr6,net,sizeof(struct in6_addr));	
++	
++
++	for(i=0;i<8;i++){
++		addr6.s6_addr16[i] = ntohs(addr6.s6_addr16[i]);
++	}
++	
++	return addr6;
++}
++
++
++struct in6_addr inet6_addr_htons(struct in6_addr *net)
++{
++	struct in6_addr addr6;
++	int i;
++	
++	memcpy(&addr6,net,sizeof(struct in6_addr));	
++	
++
++	for(i=0;i<8;i++){
++		addr6.s6_addr16[i] = htons(addr6.s6_addr16[i]);
++	}
++	
++	return addr6;
++}
++
++int nat(struct sk_buff *skb,struct conn_entry* entry,int direc)
++{
++	/*
++		POSTROUTING点为SNAT，direc为1
++		PREROUTING点为RSNAT，direc为0
++	*/
++	struct ipv6hdr* ipv6_header;
++	u_int8_t proto;
++	u_int8_t pl_proto;
++	struct tcphdr* tcp_header;
++	struct udphdr* udp_header;
++	struct icmp6hdr* icmpv6_header;
++	struct ipv6hdr* pl_ipv6_header;
++	struct tcphdr* pl_tcp_header;
++	struct icmp6hdr* pl_icmpv6_header;
++	
++	u_int32_t sum;
++	int len;
++	
++	/*定位IPv6头部*/	
++	ipv6_header = ipv6_hdr(skb);		
++	proto = ipv6_header->nexthdr;	
++	
++	/*SNAT*/
++	if(direc == 1){
++		memcpy(&(ipv6_header->saddr),&(entry->wan_ipv6),sizeof(struct in6_addr));		
++		switch (proto){
++			case IPPROTO_TCP:
++				tcp_header = (struct tcphdr*)((char*)ipv6_header + entry->proto_offset);
++				tcp_header->source = entry->wan_port;
++				
++				/*非FTP报文，正常处理*/
++				if(entry->dport != htons(FTP_PORT)){
++					tcp_header->check = adjust_checksum(tcp_header->check,entry->sub_sum);
++				}
++				
++				/*EPRT报文之前的控制报文*/
++				else if(entry->eprt_len_change == 0){
++					if(analysis_eprt(skb,entry) == 1){
++
++						//printk("old ipv6 len is %x\n",ipv6_header->payload_len);
++						ipv6_header->payload_len = htons(ntohs(ipv6_header->payload_len) + entry->eprt_len_change);
++										
++						//printk("First EPRT\n");						
++						len = htons(ipv6_header->payload_len);								
++						tcp_header->check = 0;
++						sum = in_cksum((u_int16_t *)&ipv6_header->saddr,32);
++						sum += ntohs(IPPROTO_TCP + len);
++						sum += in_cksum((u_int16_t *)tcp_header, len);
++						tcp_header->check = CKSUM_CARRY(sum);	
++						
++						//printk("checksum done\n");	
++						//printk("eprt out seq is %x\n",tcp_header->seq);				
++					}			
++					
++					else {
++						//tcp_header->check = adjust_checksum(tcp_header->check,entry->sub_sum);
++						/*EPRT之前的控制报文*/						
++						len = htons(ipv6_header->payload_len);
++						//printk("eprt ck len is %x",len);
++									
++						tcp_header->check = 0;
++						sum = in_cksum((u_int16_t *)&ipv6_header->saddr,32);
++						sum += ntohs(IPPROTO_TCP + len);
++						sum += in_cksum((u_int16_t *)tcp_header, len);
++						tcp_header->check = CKSUM_CARRY(sum);							
++					}
++				}
++				
++				/*EPRT之后的控制报文*/
++				else {
++					/*修改EPRT报文之后，需要对后续数据包的SEQ字段进行调整*/
++					tcp_header->seq = htonl(ntohl(tcp_header->seq) + entry->eprt_len_change + entry->sum_change);
++
++					if(analysis_eprt(skb,entry) == 1){				
++						ipv6_header->payload_len = htons(ntohs(ipv6_header->payload_len) + entry->eprt_len_change);
++						//printk("Houxu EPRT\n");						
++						//printk("new ipv6 len is %x\n",ipv6_header->payload_len);
++						//printk("old checksum is %x\n",tcp_header->check);
++					}
++										
++					len = htons(ipv6_header->payload_len);	
++					tcp_header->check = 0;
++					sum = in_cksum((u_int16_t *)&ipv6_header->saddr,32);
++					sum += ntohs(IPPROTO_TCP + len);
++					sum += in_cksum((u_int16_t *)tcp_header, len);
++					tcp_header->check = CKSUM_CARRY(sum);	
++
++				} 						
++				break;
++			case IPPROTO_UDP:
++				udp_header = (struct udphdr*)((char*)ipv6_header + entry->proto_offset);
++				udp_header->source = entry->wan_port;
++				udp_header->check = adjust_checksum(udp_header->check,entry->sub_sum);	
++				break;
++			case IPPROTO_ICMPV6:
++				icmpv6_header = (struct icmp6hdr*)((char*)ipv6_header + entry->proto_offset);
++				icmpv6_header->icmp6_identifier = entry->wan_id;
++				icmpv6_header->icmp6_cksum = adjust_checksum(icmpv6_header->icmp6_cksum,entry->sub_sum);
++				break;
++			default:
++				break;
++		}
++	}
++	
++	/*RSNAT*/
++	else {
++		memcpy(&(ipv6_header->daddr),&(entry->lan_ipv6),sizeof(struct in6_addr));		
++		switch (proto){
++			case IPPROTO_TCP:				
++				tcp_header = (struct tcphdr*)((char*)ipv6_header + entry->proto_offset);			
++				tcp_header->dest = entry->lan_port;
++							
++				if(entry->eprt_len_change == 0){
++					tcp_header->check = adjust_checksum(tcp_header->check,-entry->sub_sum);
++				}
++			
++				else {
++					/*对服务器返回数据包的ack进行调整*/
++					//printk("old in ack is %x\n",tcp_header->ack_seq);
++					tcp_header->ack_seq = htonl(ntohl(tcp_header->ack_seq) - entry->eprt_len_change - entry->sum_change);
++					//printk("new in ack is %x\n",tcp_header->ack_seq);
++
++					//printk("maybe bug start!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
++					//printk("eprt_len_change is %d,sum_change is %d\n",entry->eprt_len_change,entry->sum_change);					
++					//printk("new in ipv6 len is %x\n",ipv6_header->payload_len);
++					len = htons(ipv6_header->payload_len);						
++												
++					tcp_header->check = 0;
++					sum = in_cksum((u_int16_t *)&ipv6_header->saddr,32);
++					sum += ntohs(IPPROTO_TCP + len);
++					sum += in_cksum((u_int16_t *)tcp_header, len);
++					tcp_header->check = CKSUM_CARRY(sum);	
++				}		
++				break;
++				
++			case IPPROTO_UDP:
++				udp_header = (struct udphdr*)((char*)ipv6_header + entry->proto_offset);
++				udp_header->dest = entry->lan_port;
++				udp_header->check = adjust_checksum(udp_header->check,-entry->sub_sum);
++				break;
++				
++			case IPPROTO_ICMPV6:
++
++				icmpv6_header = (struct icmp6hdr*)((char*)ipv6_header + entry->proto_offset);				
++				
++				/*ICMPv6消息报文，正常传输*/
++				if(icmpv6_header->icmp6_type == ICMPV6_ECHO_REQUEST || icmpv6_header->icmp6_type == ICMPV6_ECHO_REPLY){
++					icmpv6_header->icmp6_identifier = entry->lan_id; 
++					icmpv6_header->icmp6_cksum = adjust_checksum(icmpv6_header->icmp6_cksum,-entry->sub_sum);
++				}
++				
++				/*
++					ICMPv6错误报文
++				  	负载如果是ICMPv6协议，则将lan表项内容填入负载中的源地址和identifier字段
++				  	负载如果是TCP/UDP协议，则将lan表项内容填入负载中的源地址和端口字段
++				  	之后重新计算负载的校验和，填入负载的相应字段
++				*/
++				else {
++					pl_ipv6_header = (struct ipv6hdr *)((char *)icmpv6_header + 8);
++
++					memcpy(&(pl_ipv6_header->saddr),&(entry->lan_ipv6),sizeof(struct in6_addr));
++					pl_proto = pl_ipv6_header->nexthdr;
++					
++					if(pl_proto == IPPROTO_ICMPV6){
++						pl_icmpv6_header = (struct icmp6hdr*)((char *)pl_ipv6_header + 40);
++						pl_icmpv6_header->icmp6_identifier = entry->lan_id;
++
++						len = htons(pl_ipv6_header->payload_len);	
++						pl_icmpv6_header->icmp6_cksum = 0;
++				      sum = in_cksum((u_int16_t *)&pl_ipv6_header->saddr, 32);
++				      sum += ntohs(IPPROTO_ICMPV6 + len);
++				      sum += in_cksum((u_int16_t *)pl_icmpv6_header, len);
++				      pl_icmpv6_header->icmp6_cksum = CKSUM_CARRY(sum);												
++					}
++					else if(pl_proto == IPPROTO_TCP || pl_proto == IPPROTO_UDP){
++						pl_tcp_header = (struct tcphdr*)((char *)pl_ipv6_header + 40);
++						pl_tcp_header->source = entry->lan_port;
++						
++						len = htons(pl_ipv6_header->payload_len);	
++						pl_tcp_header->check = 0;
++				      sum = in_cksum((u_int16_t *)&pl_ipv6_header->saddr, 32);
++				      sum += ntohs(pl_proto + len);
++				      sum += in_cksum((u_int16_t *)pl_tcp_header, len);
++				      pl_tcp_header->check = CKSUM_CARRY(sum);
++					}
++						
++					/*重新计算ICMPv6报文本身校验和*/
++					
++					len = htons(ipv6_header->payload_len);	
++					
++					icmpv6_header->icmp6_cksum = 0;
++		         sum = in_cksum((u_int16_t *)&ipv6_header->saddr, 32);
++		         sum += ntohs(IPPROTO_ICMPV6 + len);
++		         sum += in_cksum((u_int16_t *)icmpv6_header, len);
++		         icmpv6_header->icmp6_cksum = CKSUM_CARRY(sum);
++				}			
++				
++				break;
++			default:
++				break;
++		}
++	}
++	
++	return 1;
++}
++
++
++
++
++
++
++
++
+diff -urN napt66-0.2/.svn/text-base/napt66_nat.h.svn-base napt66-trunk/.svn/text-base/napt66_nat.h.svn-base
+--- napt66-0.2/.svn/text-base/napt66_nat.h.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/napt66_nat.h.svn-base	2012-03-13 10:09:47.753439198 +0800
+@@ -0,0 +1,17 @@
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/skbuff.h>
++#include <linux/ip.h>                  
++#include <linux/ipv6.h>
++#include <linux/netfilter.h>
++#include <linux/netfilter_ipv6.h>
++#include <linux/in6.h>
++#include <linux/types.h>
++#include <net/ipv6.h>
++#include <linux/byteorder/generic.h>
++#include <linux/string.h>
++#include "napt66_global.h"
++
++#define CKSUM_CARRY(x) \
++    (x = (x >> 16) + (x & 0xffff), (~(x + (x >> 16)) & 0xffff))
++
+diff -urN napt66-0.2/.svn/text-base/Readme.svn-base napt66-trunk/.svn/text-base/Readme.svn-base
+--- napt66-0.2/.svn/text-base/Readme.svn-base	1970-01-01 08:00:00.000000000 +0800
++++ napt66-trunk/.svn/text-base/Readme.svn-base	2012-03-13 10:09:47.796082398 +0800
+@@ -0,0 +1,28 @@
++Introduction
++IPv6-IPv6 Network Address Port Translation (NAPT66) is a stateful IPv6 NAT mechanism. Like IPv4 NAT, NAPT66 technique makes several hosts share a public IPv6 address. As a result, NAPT66 helps to hide the private network topology and promote network security. 
++
++NAPT66 based on GNU/Linux is implemented in kernel space, which provides satisfied performance and portability. It has been ported to several open-source router firmware (e.g. OpenWrt) so that it can be run on low-end, commodity hardware (e.g. BCM63xx platform).
++
++NAPT66 should be installed on a boundary router situated between two IPv6 networks. It performs stateful packet translation between internal IPv6 hosts and external IPv6 hosts. 
++NAPT66 uses Application Level Gateways (ALGs) and DNS Proxy to deal with complex applications (like active FTP and DNS). More applications can travels NAPT66 in the future.
++
++Tested Protocols
++·HTTP 
++·MMS 
++·FTP - active and passive
++·Telnet 
++·ICMPv6 - echo request, echo reply，error messages(Destination Unreachable、Packet Too Big、Time Exceeded、Parameter Problem)
++
++Limitations
++In some certain scenarios, NAPT66 is unacceptable for these limitations.
++·Breaking the end-to-end model
++Several traditional NAT traversal techniques (e.g. ALGs, UPnP) may helps to solve the problem.
++·No fragmentation
++Avoiding fragmentation is one of the principles of IPv6. NAPT66 don’t support IPv6 fragmentation for the moment.
++
++Members
++Weilin Xu, Yigang Yang, Huiting Liu
++They are from Grade 2008, School of Computer, Beijing Univ. of Posts & Telecom.
++
++Acknowledgements
++This work is supported by the Research Innovation Fund for College Students of Beijing University of Posts and Telecommunications (Grant No. 101104537) and guided by Lecturer Hua Zhang from Institute of Network Technology, BUPT.

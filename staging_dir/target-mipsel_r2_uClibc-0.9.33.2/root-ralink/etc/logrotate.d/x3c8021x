@@ -1,0 +1,7 @@
+/var/log/x3c8021x.log {
+	daily
+	compress
+	copytruncate
+	rotate 1
+	missingok
+}

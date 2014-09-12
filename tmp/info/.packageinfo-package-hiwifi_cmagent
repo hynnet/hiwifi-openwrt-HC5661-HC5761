@@ -1,0 +1,19 @@
+Source-Makefile: package/package-hiwifi/cmagent/Makefile
+Package: cmagent
+Version: 0.64-20140620
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libevent2 +libevent2-openssl +jansson +libtw +lua +libhiwifi-lua +nixio +luasec +libtw-lua +libauth +libhwf-log +libbdinfo +libcurl +libqos
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: net
+Category: Turbo Wireless
+Title: Agent of Cloud Messaging Service
+Maintainer: Hong Shen <sh@ikwcn.com>
+Source: 
+Type: ipkg
+Description: Agent of Cloud Messaging Service
+http://10.9.1.43/cloud
+Hong Shen <sh@ikwcn.com>
+@@
+
+

@@ -1,0 +1,17 @@
+config system
+	option hostname	Hiwifi
+	option timezone	CST-8
+	option zonename Asia/Shanghai
+
+config timeserver ntp
+	list server	time.turboer.com
+	list server	ntp.api.bz
+	list server	s1b.time.edu.cn
+	list server	time-a.timefreq.bldrdoc.gov
+	list server	time-a.nist.gov
+	list server	nist1-dc.glassey.com
+	option enable_server 0
+
+config default dhcpc
+	option hostname Hiwifi
+	

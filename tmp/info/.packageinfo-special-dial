@@ -1,0 +1,17 @@
+Source-Makefile: package/special-dial/Makefile
+Package: special-dial
+Version: 1.1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +librt
+Menu-Depends: 
+Provides: 
+Section: utils
+Category: Utilities
+Title: Plug-in for PPPoE special dialing
+Maintainer: Duke Wu <duke.wu@hiwifi.tw>
+Source: 
+Type: ipkg
+Description: Provide supporting for PPPoE special dialing in some region.
+Duke Wu <duke.wu@hiwifi.tw>
+@@
+
+

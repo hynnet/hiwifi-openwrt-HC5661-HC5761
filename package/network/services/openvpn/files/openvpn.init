@@ -1,0 +1,111 @@
+#!/bin/sh /etc/rc.common
+# Copyright (c) 2013 Hiwifi Co., Ltd.
+# Copyright (c) 2013 Geek-geek Co., Ltd.
+
+START=95
+
+EXTRA_COMMANDS="status"
+
+SERVICE_WRITE_PID=1
+SERVICE_DAEMONIZE=1
+
+OPENVPN_WORKDIR=/etc/openvpn
+OPENVPN_BIN=/usr/sbin/openvpn 
+
+OBFSPROXY_BIN=/usr/bin/obfsproxy
+
+. /usr/share/libubox/jshn.sh
+
+getpid() {
+	echo `ps ww| grep -- "$OPENVPN_BIN --daemon --config $OPENVPN_WORKDIR/$1" | grep -v grep | awk '{print $1}'`
+}
+
+testconfig() {
+	if [ -z "$1" ]; then
+		VPNNAME=*
+	else
+		VPNNAME=$1
+		if [ ! -f /etc/openvpn/$VPNNAME.ovpn ]; then
+			echo "ERROR: not found " $VPNNAME.ovpn
+			exit 1
+		fi
+	fi
+}
+
+start() {
+	testconfig "$@"
+	disable=`uci get app.goabroad.disable`
+	if [ $disable -eq 0 ]; then
+		[ -f "/etc/obfsproxy.key" ] && {
+			. /etc/obfsproxy.key
+			service_start $OBFSPROXY_BIN --no-safe-logging obfs2 --shared-secret="$OBFS_KEY" socks 127.0.0.1:4444
+		}
+		insmod tun > /dev/null 2>&1
+		cd $OPENVPN_WORKDIR
+		for f in $( ls $VPNNAME.ovpn ); do
+			PID=$(getpid $f)
+			if [ -n "$PID" ]; then
+				echo "$f running($PID)..."
+				continue
+			fi
+			$OPENVPN_BIN --daemon --config $OPENVPN_WORKDIR/$f --cd $OPENVPN_WORKDIR
+		done
+	else 
+		if [ $disable -eq 1 ]; then
+			echo "app has been stopped in uci"
+			return 0
+		else 
+			echo "status wrong ,please cheek uci config"
+			return 0
+		fi
+	fi	
+}
+
+stop() {
+	testconfig "$@"
+
+	cd $OPENVPN_WORKDIR
+	for f in $( ls $VPNNAME.ovpn ); do
+		PID=$(getpid $f)
+		kill $PID 2>/dev/null
+	done
+	sleep 3 && rmmod tun > /dev/null 2>&1
+
+#	service_stop $OBFSPROXY_BIN 
+}
+
+status() {
+	testconfig "$@"
+
+	json_init
+	PID=$(getpid ${VPNNAME}.ovpn)
+        if [ -z "$PID" ]; then
+            if [ -f "/var/run/$VPNNAME.ovpn.status" ]; then
+                status=$(cat /var/run/$VPNNAME.ovpn.status 2>/dev/null)
+                if [ $status == "traffic_overflow" -o $status == "system_weihu" ]; then
+                    json_add_string status "$status"
+                    json_dump
+                    return 0
+                else
+                    json_add_string status "stopped"
+                    json_dump
+                    return 0
+                fi
+            else
+                json_add_string status "stopped"                                                                     
+                json_dump
+                return 0
+            fi
+        else
+            if [ -f "/var/run/$VPNNAME.ovpn.status" ]; then
+                status=$(cat /var/run/$VPNNAME.ovpn.status 2>/dev/null)
+                json_add_string status "$status"
+                json_dump
+                return 0
+            else 
+                json_add_string status "dailing" 
+                json_dump
+                return 0
+            fi
+	fi
+}

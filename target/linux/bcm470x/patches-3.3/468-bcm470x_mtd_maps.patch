@@ -1,0 +1,11 @@
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -526,4 +526,8 @@
+ 
+           If compiled as a module, it will be called latch-addr-flash.
+ 
++config MTD_BCM947XX
++	tristate "CFI Flash device mapped on Broadcom BCM947XX boards"
++	depends on MTD_CFI
++
+ endmenu

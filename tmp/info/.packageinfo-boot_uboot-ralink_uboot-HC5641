@@ -1,0 +1,19 @@
+Source-Makefile: package/boot/uboot-ralink/uboot-HC5641/Makefile
+Package: uboot-ralink-HC5641
+Default: y if (TARGET_ralink_mt7620_HC5641)
+Version: 1.1.3-20140604
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_ralink_mt7620_HC5641
+Menu-Depends: 
+Provides: 
+Build-Variant: HC5641
+Section: boot
+Category: Boot Loaders
+Title: U-boot for HC5641 mt7620a+nxp board
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: bin
+Description: U-boot for HC5641 mt7620a+nxp board
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

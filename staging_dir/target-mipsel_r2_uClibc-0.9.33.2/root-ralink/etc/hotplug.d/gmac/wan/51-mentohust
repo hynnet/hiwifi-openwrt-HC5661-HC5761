@@ -1,0 +1,14 @@
+#!/bin/sh /etc/rc.common
+
+Enabled=`uci get mentohust.@option[0].enable 2>/dev/null`
+
+[ ${Enabled:-0} -ne 1 ] && exit 0
+
+stop() {
+	/etc/init.d/mentohust stop
+}
+
+start() {
+	/etc/init.d/mentohust start
+}
+

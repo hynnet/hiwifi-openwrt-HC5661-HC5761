@@ -1,0 +1,9 @@
+--- a/drivers/mtd/Kconfig
++++ b/drivers/mtd/Kconfig
+@@ -355,4 +355,6 @@
+ 
+ source "drivers/mtd/ubi/Kconfig"
+ 
++source "drivers/mtd/bcm947xx/Kconfig"
++
+ endif # MTD

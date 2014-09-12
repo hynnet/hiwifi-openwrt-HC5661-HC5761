@@ -1,0 +1,6 @@
+# Essential files that will be always kept
+/etc/group
+/etc/passwd
+/etc/shells
+/etc/rc.local
+/etc/shadow

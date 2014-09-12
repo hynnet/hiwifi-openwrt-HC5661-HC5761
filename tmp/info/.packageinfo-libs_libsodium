@@ -1,0 +1,21 @@
+Source-Makefile: package/libs/libsodium/Makefile
+Package: libsodium
+Menu: 1
+Version: 0.4.5-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: libs
+Category: Libraries
+Title: Portable & packageable NaCl-based crypto library
+Maintainer: nanpuyue <nanpuyue@gmail.com>
+Source: libsodium-0.4.5.tar.gz
+Type: ipkg
+Description: 	NaCl (pronounced "salt") is a new easy-to-use high-speed software library for network communication, encryption, decryption, signatures, etc.
+	NaCl's goal is to provide all of the core operations needed to build higher-level cryptographic tools.
+	Sodium is a portable, cross-compilable, installable, packageable fork of NaCl, with a compatible API.
+https://github.com/jedisct1/libsodium
+nanpuyue <nanpuyue@gmail.com>
+@@
+
+

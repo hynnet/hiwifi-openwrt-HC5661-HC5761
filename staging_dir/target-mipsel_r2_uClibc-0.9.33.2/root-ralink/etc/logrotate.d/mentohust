@@ -1,0 +1,7 @@
+/var/log/mentohust.log {
+	daily
+	compress
+	copytruncate
+	rotate 1
+	missingok
+}

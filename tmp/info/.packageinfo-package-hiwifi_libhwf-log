@@ -1,0 +1,17 @@
+Source-Makefile: package/package-hiwifi/libhwf-log/Makefile
+Package: libhwf-log
+Version: 0.1-20140506
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: libs
+Category: Turbo Wireless
+Title: Librory for log
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  use SIGUSR1 to control the log level
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

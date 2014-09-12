@@ -1,0 +1,46 @@
+#!/bin/sh
+
+. /lib/functions/net_update_actions.sh
+
+v=-2
+
+if [ -n "$1" ]; then
+	case "$1" in
+		"on")
+			v=-1
+			;;
+		"off")	
+			v=0
+			[ -n "$2" ]  && expr match "$2" "[0-9][0-9]*$" &> /dev/null && [  "$2" -gt "0"  ] && {
+				
+				v=$2
+				v=$(( $(date +%s) + v * 3600))
+			}
+			;;
+		"state")
+			get_inet_chk_switch &> /dev/null
+			if [ "$?" -eq 0 ];then
+				echo "off"
+			else
+				echo "on"
+			fi
+
+			return 0	
+			;;
+		*)
+			return 1	
+			;;
+	esac
+
+	[ $v -ne -2 ] && {
+		touch /etc/config/inet_chk
+
+		uci set inet_chk.switch=$v
+		uci commit
+		return 0
+	}
+
+fi
+
+return 1
+

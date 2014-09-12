@@ -1,0 +1,20 @@
+Source-Makefile: package/network/services/x3c8021x/Makefile
+Package: x3c8021x
+Submenu: CERNET
+Version: 1.3-1.4
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpcap
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: Another iNode 802.1X client for embedded devices 
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  802.1X client compatable with H3C iNode 802.1X client.
+ Support H3C/iNode's private authentication protocol v2.4-v5.1
+http://www.hiwifi.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

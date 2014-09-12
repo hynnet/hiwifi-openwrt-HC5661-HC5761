@@ -1,0 +1,22 @@
+From 2d303b4683145f7dbc918bd14d04e1396581b2ce Mon Sep 17 00:00:00 2001
+From: Imre Kaloz <kaloz@openwrt.org>
+Date: Thu, 7 Jul 2011 12:05:21 +0200
+Subject: [PATCH] ARM: support XZ compressed kernels
+
+Wire up support for the XZ decompressor
+
+Signed-off-by: Imre Kaloz <kaloz@openwrt.org>
+---
+ lib/xz/xz_dec_stream.c                  |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+--- a/lib/xz/xz_dec_stream.c
++++ b/lib/xz/xz_dec_stream.c
+@@ -9,6 +9,7 @@
+ 
+ #include "xz_private.h"
+ #include "xz_stream.h"
++#include <linux/kernel.h>
+ 
+ /* Hash used to validate the Index field */
+ struct xz_dec_hash {

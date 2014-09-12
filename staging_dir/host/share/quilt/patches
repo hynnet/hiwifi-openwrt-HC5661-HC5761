@@ -1,0 +1,137 @@
+#! /bin/bash
+
+#  This script is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2 as
+#  published by the Free Software Foundation.
+#
+#  See the COPYING and AUTHORS files for more details.
+
+# Read in library functions
+if [ "$(type -t patch_file_name)" != function ]
+then
+	if ! [ -r $QUILT_DIR/scripts/patchfns ]
+	then
+		echo "Cannot read library $QUILT_DIR/scripts/patchfns" >&2
+		exit 1
+	fi
+	. $QUILT_DIR/scripts/patchfns
+fi
+
+usage()
+{
+	printf $"Usage: quilt patches [-v] {file}\n"
+	if [ x$1 = x-h ]
+	then
+		printf $"
+Print the list of patches that modify the specified file. (Uses a
+heuristic to determine which files are modified by unapplied patches.
+Note that this heuristic is much slower than scanning applied patches.)
+
+-v	Verbose, more user friendly output.
+"
+		exit 0
+	else
+		exit 1
+	fi
+}
+
+scan_applied()
+{
+	local prefix=$1 file=$2
+	shift 2
+	local patch
+
+	for patch in "$@"
+	do
+		if [ -f "$(backup_file_name $patch "$file")" ]
+		then
+			echo "$prefix$(print_patch $patch)"
+		fi
+	done
+}
+
+touched_by_patch()
+{
+	local strip=$1 patch=$2
+	[ $strip = ab ] && strip=1
+	cat_file $(patch_file_name $patch) \
+	|  awk '
+	/^\+\+\+[ \t]/ {
+		sub(/^\+\+\+[ \t]/, "")
+		sub(/[ \t].*/, "")
+		sub(/^\/dev\/null/, "")
+		for (i=0; i<'$strip'; i++)
+			sub(/^[^\/]*\//, "")
+		print
+	}'
+}
+
+scan_unapplied()
+{
+	local prefix=$1 file=$2 strip
+	shift 2
+	local file_bre="$(quote_bre $file)" patch
+
+	for patch in "$@"
+	do
+		strip=$(patch_strip_level $patch)
+		[ "$strip" = ab ] && strip=1
+
+		if touched_by_patch $strip $patch \
+		   | grep -q "^$file_bre\$"
+		then
+			echo "$prefix$(print_patch $patch)"
+		fi
+	done
+}
+
+options=`getopt -o vh -- "$@"`
+
+if [ $? -ne 0 ]
+then
+	usage
+fi
+
+eval set -- "$options"
+
+while true
+do
+	case "$1" in
+	-v)
+		opt_verbose=1
+		shift ;;
+	-h)
+		usage -h ;;
+	--)
+		shift
+		break ;;
+	esac
+done
+
+if [ $# -ne 1 ]
+then
+	usage
+fi
+opt_file="$SUBDIR$1"
+
+top=$(top_patch)
+
+if [ -n "$opt_verbose" ]
+then
+	applied="+ "
+	current="= "
+	unapplied="  "
+else
+	applied=""
+	current=""
+	unapplied=""
+fi
+
+scan_applied "$applied" "$opt_file" $(patches_before $top)
+[ -n "$top" ] && \
+	scan_applied "$current" "$opt_file" $top
+scan_unapplied "$unapplied" "$opt_file" $(patches_after $top)
+### Local Variables:
+### mode: shell-script
+### End:
+# vim:filetype=sh

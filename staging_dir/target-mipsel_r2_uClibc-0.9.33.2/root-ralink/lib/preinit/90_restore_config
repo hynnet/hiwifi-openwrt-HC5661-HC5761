@@ -1,0 +1,41 @@
+#!/bin/sh
+# Copyright (C) 2006 OpenWrt.org
+# Copyright (C) 2010 Vertical Communications
+
+hiwifi_restore_config() {
+	mtdpart="$(find_mtd_part hwf_config)"
+	[ -z "$mtdpart" ] && return 1
+
+	# restore magic number
+	magic=$(dd if=$mtdpart bs=1 skip=65528 2>/dev/null | hexdump -n 8 -e '8/1 "%02x"')
+	[ "$magic" != "ffffffff00000000" ] && return 1
+
+	# tar.gz magic number
+	magic=$(dd if=$mtdpart bs=1 skip=0 2>/dev/null | hexdump -n 2 -e '2/1 "%02x"')
+	[ "$magic" != "1f8b" ] && return 1
+
+	echo "- restore HiWiFi config -"
+
+	cat $mtdpart >/tmp/hwf_conf.tar
+	tar -C / -xzf /tmp/hwf_conf.tar
+	rm -f /tmp/hwf_conf.tar
+	mtd -q erase hwf_config
+	touch /tmp/hiwifi_restore_config
+	sync
+}
+
+restore_config() {
+    [ -f /sysupgrade.tgz ] && {
+	echo "- config restore -"
+	cd /
+	mv sysupgrade.tgz /tmp
+	tar xzf /tmp/sysupgrade.tgz
+	rm -f /tmp/sysupgrade.tgz
+	sync
+    }
+
+    hiwifi_restore_config
+}
+
+boot_hook_add preinit_main restore_config
+

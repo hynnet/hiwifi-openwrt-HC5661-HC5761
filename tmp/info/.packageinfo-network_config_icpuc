@@ -1,0 +1,18 @@
+Source-Makefile: package/network/config/icpuc/Makefile
+Package: icpuc
+Version: 1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_ralink_mt7620_HB5981m||TARGET_ralink_mt7620_HB5981s +util-switch
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: HiWiFi inter cpu communication
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  Manage slave router mode and communcate with master and slave cpu
+http://www.hiwifi.com/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

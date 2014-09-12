@@ -1,0 +1,19 @@
+# This is a simple chat script based off of the one provided by Sierra Wireless
+# for TD-SCDMA connections.  It should work for both Sprint and Verizon networks.
+
+ABORT	BUSY
+ABORT 	'NO CARRIER'
+ABORT	ERROR
+ABORT 	'NO DIAL TONE'
+ABORT 	'NO ANSWER'
+REPORT	CONNECT
+TIMEOUT	10
+""		"ATZ"
+OK 		"ATE0V1"
+OK		"ATS0=0"
+OK		'AT+CGDCONT=1,"IP","$USE_APN"'
+OK		"AT+CFUN=1"
+SAY     "Calling TD-SCDMA"
+TIMEOUT	30
+OK		"ATD*98*1#"
+CONNECT	''

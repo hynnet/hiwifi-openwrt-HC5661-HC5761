@@ -1,0 +1,51 @@
+#!/bin/sh /etc/rc.common
+#Autho:duke
+
+EXTRA_COMMANDS="status"
+
+START=90
+STOP=10
+BIN=iwas4gdou
+
+start()
+{
+	local Enabled
+	local Username
+	local Password
+	local Wanif
+	local Log
+
+	Enabled=$(uci get $BIN.@base_set[0].enable 2>/dev/null)
+
+	[ ${Enabled:-0} -ne 1 ] && return
+
+	Username=$(uci get $BIN.@base_set[0].username)
+	Password=$(uci get $BIN.@base_set[0].password)
+	Wanif=$(uci get $BIN.@base_set[0].wanif)
+	Compatible=$(uci get $BIN.@adv_set[0].compatible)
+	Log=$(uci get $BIN.@adv_set[0].log)
+
+	if [ ${Compatible:-0} -eq 1 ]
+	then
+		$BIN -adrc -i "$Wanif" -u "$Username" -p "$Password" -l $Log
+	else
+		$BIN -adr -i "$Wanif" -u "$Username" -p "$Password" -l $Log
+	fi
+}
+
+stop()
+{
+	local Wanif=$(uci get $BIN.@base_set[0].wanif)
+
+	$BIN -d -i "$Wanif"
+}
+
+status()
+{
+	if `pgrep $BIN > /dev/null 2>&1`; then
+		echo running
+	else
+		echo stopped
+	fi
+}
+

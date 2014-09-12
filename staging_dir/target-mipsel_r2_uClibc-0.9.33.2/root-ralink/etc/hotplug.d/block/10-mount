@@ -1,0 +1,199 @@
+#!/bin/sh
+# Copyright (C) 2012-2013 hiwifi.com
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
+
+blkdev=`dirname $DEVPATH`
+device=`basename $DEVPATH`
+dev_path="/dev/$device"
+dev_mount="/tmp/$device"
+
+DM_PASSWD_FILE=/tmp/dm-passwd
+
+BIGDATA=/tmp/bigdata
+
+source /sbin/sdfunc.sh
+source /lib/storage.sh
+
+mount_fs()
+{
+	sd_log "mount_fs $ID_FS_TYPE $@"
+
+	if [ "$ID_FS_TYPE" == "msdos" -o "$ID_FS_TYPE" == "vfat" ] ; then
+		#dosfsck -a $dev_path >/dev/null 2>&1
+		mount -t vfat -o noatime,fmask=0000,dmask=0000,iocharset=utf8 $dev_path $dev_mount
+		if [ $? -eq "0" ]; then
+			mount | grep "$device" | grep -qs "ro,"
+			if [ $? -eq "0" ]; then
+				mount -t vfat -o remount $dev_path $dev_mount
+			fi
+			return 0
+		fi
+	elif [ "$ID_FS_TYPE" == "ntfs" ] ; then
+		ntfs-3g -o big_writes,noatime,nls=utf8 $dev_path $dev_mount
+		if [ $? -eq "0" ]; then
+			mount | grep "$device" | grep -qs "ro,"
+			if [ $? -eq "0" ]; then
+				umount $dev_mount
+				if [ $? -eq "0" ]; then
+					ntfs-3g -o big_writes,noatime,nls=utf8 $dev_path $dev_mount
+				fi
+			fi				
+			return 0
+		fi
+	elif [ "$ID_FS_TYPE" == "exfat" ] ; then
+		#fsck.exfat $dev_path >/dev/null 2>&1
+		mount -t exfat -o noatime,fmask=0,dmask=0,iocharset=utf8 $dev_path $dev_mount
+		if [ $? -eq "0" ]; then
+			mount | grep "$device" | grep -qs "ro,"
+			if [ $? -eq "0" ]; then
+				mount -t exfat -o remount $dev_path $dev_mount
+			fi				
+			return 0
+		fi			
+	elif [ "$ID_FS_TYPE" == "ext4" -o "$ID_FS_TYPE" == "ext3" -o "$ID_FS_TYPE" == "ext2" ] ; then
+		e2fsck -y $dev_path
+		mount -t $ID_FS_TYPE -o noatime $dev_path $dev_mount
+		if [ $? -eq "0" ]; then
+			mount | grep "$device" | grep -qs "ro,"
+			if [ $? -eq "0" ]; then
+				mount -t $ID_FS_TYPE -o remount $dev_path $dev_mount
+			fi
+			return 0
+		fi
+	fi
+	
+	return 1
+}
+
+mount_ext4()
+{
+	sd_log "mount_ext4 $ID_FS_TYPE $@"
+
+	if [ "$ID_FS_TYPE" != "ext4" ]; then
+		mkfs.ext4 $dev_path
+	else
+		e2fsck -y $dev_path
+	fi
+
+	local errstr
+	errstr=$(mount -t ext4 -o noatime $dev_path $dev_mount 2>&1)
+	if [ $? -eq "0" ]; then
+		mount | grep "$device" | grep -qs "ro,"
+		if [ $? -eq "0" ]; then
+			mount -t ext4 -o remount $dev_path $dev_mount
+		fi
+		return 0
+	fi
+
+	sd_log "mount_ext4 $errstr"
+	return 1
+}
+
+mount_cryptdata()
+{
+	sd_log "mount_cryptdata $ID_FS_TYPE $@"
+
+	#Make sure the data partition exist.
+	fdisk -l /dev/mmcblk0 | grep mmcblk0p2
+	[ $? -ne 0 ] && return 1
+
+	#Cleanup
+	umount /tmp/cryptdata &>/dev/null
+	cryptsetup luksClose cryptdata &>/dev/null
+
+	#Get the passwd.
+	echo $(/sbin/hi_crypto_key device-crypt-key) >$DM_PASSWD_FILE
+
+	cryptsetup luksOpen /dev/mmcblk0p1 cryptdata -d $DM_PASSWD_FILE
+	if [ $? -ne 0 -o "$ID_FS_TYPE" != "crypto_LUKS" ]; then
+		#TODO: The size is not checked now.
+		sd_log "mount_cryptdata luksFormat"
+		yes YES | cryptsetup luksFormat /dev/mmcblk0p1 -c aes-cbc-plain -d $DM_PASSWD_FILE
+		cryptsetup luksOpen /dev/mmcblk0p1 cryptdata -d $DM_PASSWD_FILE
+	fi
+
+	mkdir /tmp/cryptdata &>/dev/null
+	mount -t ext4 /dev/mapper/cryptdata /tmp/cryptdata
+	[ $? -ne 0 ] && {
+		sd_log "mount_cryptdata mkfs.ext4"
+		mkfs.ext4 /dev/mapper/cryptdata
+		mount -t ext4 /dev/mapper/cryptdata /tmp/cryptdata
+	}
+
+	return 0
+}
+
+sd_log "$ACTION ==="
+
+case "$device" in
+"sd"* | "mmcblk"*)
+	case "$ACTION" in
+	add)
+		ID_FS_TYPE=""
+		eval `blkid -o udev $dev_path`
+
+		case "$device" in
+		"mmcblk0")
+			sd_state_set "inserted"
+			fdisk -l $dev_path | grep mmcblk0p1
+			[ $? -ne 0 ] && sd_part "blank"
+
+			#If /dev/mmcblk0 is the only partition with FAT32 format, fdisk will not parse it correctly.
+			fdisk -l $dev_path | grep mmcblk0p1 | grep -i Unknown
+			[ $? -eq 0 ] && sd_state_set "not-formated"
+			;;
+		"mmcblk0p1")
+			mkdir -p $dev_mount &>/dev/null
+			sd_state_set "inserted"
+			mount_fs
+			if [ $? -eq 0 ]; then
+				cnt=$(ls $dev_mount | grep -v -E "^(lost\+found|System Volume Information|var|cron|traffic_|p2p|cloud|hwf_|cmagent|.*\.core|.*\.log)" | wc -l)
+				if [ $cnt -eq 0 ]; then
+					umount $dev_mount
+					[ $? -ne 0 ] && sd_log "umount $dev_mount failed!"
+					sd_part "unused"
+				else
+					sd_state_set "not-formated"
+					#TODO: Use the old file system now, since there are user data in it.
+					#TODO: Use 'umount $dev_mount' to replace 'create_storage'
+					#create_storage $dev_mount
+					umount $dev_mount
+				fi
+			else
+				mount_cryptdata
+				[ $? -ne 0 ] && sd_part "invalid"
+			fi
+			;;
+		"mmcblk0p2")
+			[ -e /dev/mapper/cryptdata ] && {
+				mkdir -p $dev_mount &>/dev/null
+				mount_ext4
+				[ $? -eq 0 ] && create_storage $dev_mount
+			}
+			;;
+		"sd"*)
+			hiwifi_storage_handle "$dev_path" "$ACTION" "$device" "$ID_FS_TYPE"
+		esac
+		;;
+
+	remove)
+		case "$device" in
+		"mmcblk"*)
+			sd_umount 
+			sd_state_set "removed"
+			;;
+		"sd"*)
+			hiwifi_storage_handle "$dev_path" "$ACTION" "$device"
+			;;
+		esac
+		;;
+
+	offline)
+		;;
+
+	esac
+	;;
+esac
+

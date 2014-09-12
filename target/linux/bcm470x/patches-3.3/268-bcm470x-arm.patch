@@ -1,0 +1,63 @@
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -984,6 +984,12 @@
+ 	select USE_OF
+ 	help
+ 	  Support for Xilinx Zynq ARM Cortex A9 Platform
++
++config ARCH_BRCM
++	bool "Broadcom ARM"
++	help
++		Support for Broadcom ARM-based devices and boards.
++
+ endchoice
+ 
+ #
+@@ -1103,6 +1109,9 @@
+ source "arch/arm/mach-vt8500/Kconfig"
+ 
+ source "arch/arm/mach-w90x900/Kconfig"
++
++source "arch/arm/mach-brcm-hnd/Kconfig"
++source "arch/arm/plat-brcm/Kconfig"
+ 
+ # Definitions to make life easier
+ config ARCH_ACORN
+@@ -1387,6 +1396,22 @@
+ 
+ source "arch/arm/common/Kconfig"
+ 
++menu "Support for Broadcom ARM based boards"
++
++config BCM947XX
++	bool "Support for Broadcom BCM947XX"
++	depends on ARCH_BRCM
++
++config BCM47XX
++	bool "Support for Broadcom BCM47XX processors"
++	depends on BCM947XX
++
++config FAILSAFE_UPGRADE
++	bool "Failesafe Upgrades"
++	depends on BCM947XX
++	default n
++endmenu
++
+ menu "Bus support"
+ 
+ config ARM_AMBA
+@@ -1464,12 +1489,12 @@
+ 
+ config SMP
+ 	bool "Symmetric Multi-Processing"
+-	depends on CPU_V6K || CPU_V7
++	depends on CPU_V6K || CPU_V7 || PLAT_MPCORE
+ 	depends on GENERIC_CLOCKEVENTS
+ 	depends on HAVE_SMP
+ 	depends on MMU
+ 	select USE_GENERIC_SMP_HELPERS
+-	select HAVE_ARM_SCU if !ARCH_MSM_SCORPIONMP
++	select HAVE_ARM_SCU if !ARCH_MSM_SCORPIONMP || PLAT_MPCORE
+ 	help
+ 	  This enables support for systems with more than one CPU. If you have
+ 	  a system with only one CPU, like most personal computers, say N. If

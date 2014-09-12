@@ -1,0 +1,22 @@
+#!/bin/sh
+# Copyright (C) 2013-2014 www.hiwifi,com
+#
+
+. /lib/ralink.sh
+
+board=$(tw_board_name)
+
+case "$board" in
+HB5981s)
+	sed -i 's/^HT_TxStream=2/HT_TxStream=1/g' /etc/wlan/RT2860.dat
+	sed -i 's/^HT_RxStream=2/HT_RxStream=1/g' /etc/wlan/RT2860.dat
+	;;
+HC5861)
+	sed -i 's/^HT_TxStream=1/HT_TxStream=2/g' /etc/wlan/iNIC_ap.dat
+	sed -i 's/^HT_RxStream=1/HT_RxStream=2/g' /etc/wlan/iNIC_ap.dat
+	sed -i 's/^HT_STBC=0/HT_STBC=1/g' /etc/wlan/iNIC_ap.dat
+	sed -i 's/^VHT_STBC=0/VHT_STBC=1/g' /etc/wlan/iNIC_ap.dat
+	;;
+esac
+
+exit 0

@@ -1,0 +1,23 @@
+Source-Makefile: package/package-hiwifi/network-fix/Makefile
+Package: network-fix
+Version: 1.1.0-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Turbo Wireless
+Title: Turbo Network Automatic Fixing
+Maintainer: Li Kai <9@kai.li>
+Source: 
+Type: ipkg
+Description:   Several automatic script for network configuration
+  1. lan ip address auto-switch in case of wan/lan ip collision
+  2. auto fix wan dhcp passthrough problem on a wan-lan-in-one box
+http://www.turboer.com/
+Li Kai <9@kai.li>
+@@
+Config:
+	source "/home/hiwifi/hc5761/package/network-fix/Config.in"
+@@
+
+

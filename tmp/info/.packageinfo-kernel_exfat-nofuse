@@ -1,0 +1,18 @@
+Source-Makefile: package/kernel/exfat-nofuse/Makefile
+Package: kmod-exfat
+Submenu: Filesystems
+Version: <LINUX_VERSION>-5
+Depends: +kmod-nls-utf8
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: exFat Filesystem drivers
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  This package contains exfat filesystem drivers.
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

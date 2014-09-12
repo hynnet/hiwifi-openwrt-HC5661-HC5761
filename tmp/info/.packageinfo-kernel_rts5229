@@ -1,0 +1,18 @@
+Source-Makefile: package/kernel/rts5229/Makefile
+Package: kmod-rts5229
+Submenu: Other modules
+Version: <LINUX_VERSION>-1.07
+Depends: @PCI_SUPPORT +kmod-scsi-core
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: rts5229 PCIe card reader
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: rts5229 PCIe card reader
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

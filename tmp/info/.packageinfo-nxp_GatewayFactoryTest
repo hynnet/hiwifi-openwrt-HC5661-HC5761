@@ -1,0 +1,19 @@
+Source-Makefile: package/nxp/GatewayFactoryTest/Makefile
+Package: GatewayFactoryTest
+Version: v0_2
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libftdi +libusb
+Menu-Depends: 
+Provides: 
+Section: nxp
+Category: NXP
+Title: Factory Test Programs for gateway
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  Provides support for factory testing of gateway hardware
+ Provides support for configuring USB dongles via cgi page
+http://www.jennic.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

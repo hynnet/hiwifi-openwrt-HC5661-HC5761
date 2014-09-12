@@ -1,0 +1,100 @@
+--- a/pppd/chap-new.c
++++ b/pppd/chap-new.c
+@@ -517,7 +517,7 @@
+ 		if (cs->digest->handle_failure != NULL)
+ 			(*cs->digest->handle_failure)(pkt, len);
+ 		else
+-			msg = "CHAP authentication failed";
++			msg = "E=691 CHAP authentication failed";
+ 	}
+ 	if (msg) {
+ 		if (len > 0)
+--- a/pppd/upap.c
++++ b/pppd/upap.c
+@@ -538,7 +538,7 @@
+ 
+     u->us_clientstate = UPAPCS_BADAUTH;
+ 
+-    error("PAP authentication failed");
++    error("E=691 PAP authentication failed");
+     auth_withpeer_fail(u->us_unit, PPP_PAP);
+ }
+ 
+--- a/pppd/plugins/rp-pppoe/discovery.c
++++ b/pppd/plugins/rp-pppoe/discovery.c
+@@ -539,7 +539,7 @@
+     do {
+ 	padiAttempts++;
+ 	if (padiAttempts > MAX_PADI_ATTEMPTS) {
+-	    warn("Timeout waiting for PADO packets");
++	    warn("E=678 Timeout waiting for PADO packets");
+ 	    close(conn->discoverySocket);
+ 	    conn->discoverySocket = -1;
+ 	    return;
+--- a/pppd/chap_ms.c
++++ b/pppd/chap_ms.c
+@@ -370,7 +370,7 @@
+ static void
+ chapms_handle_failure(unsigned char *inp, int len)
+ {
+-	int err;
++	int err = -1;
+ 	char *p, *msg;
+ 
+ 	/* We want a null-terminated string for strxxx(). */
+@@ -401,40 +401,44 @@
+ 		/* No M=<message>; use the error code. */
+ 		switch (err) {
+ 		case MS_CHAP_ERROR_RESTRICTED_LOGON_HOURS:
+-			p = "E=646 Restricted logon hours";
++			p = "Restricted logon hours";
+ 			break;
+ 
+ 		case MS_CHAP_ERROR_ACCT_DISABLED:
+-			p = "E=647 Account disabled";
++			p = "Account disabled";
+ 			break;
+ 
+ 		case MS_CHAP_ERROR_PASSWD_EXPIRED:
+-			p = "E=648 Password expired";
++			p = "Password expired";
+ 			break;
+ 
+ 		case MS_CHAP_ERROR_NO_DIALIN_PERMISSION:
+-			p = "E=649 No dialin permission";
++			p = "No dialin permission";
+ 			break;
+ 
+ 		case MS_CHAP_ERROR_AUTHENTICATION_FAILURE:
+-			p = "E=691 Authentication failure";
++			p = "Authentication failure";
+ 			break;
+ 
+ 		case MS_CHAP_ERROR_CHANGING_PASSWORD:
+ 			/* Should never see this, we don't support Change Password. */
+-			p = "E=709 Error changing password";
++			p = "Error changing password";
+ 			break;
+ 
+ 		default:
+-			free(msg);
+-			error("Unknown MS-CHAP authentication failure: %.*v",
+-			      len, inp);
+-			return;
++			p = "Unknown MS-CHAP authentication failure";
++			break;
+ 		}
+ 	}
+ print_msg:
+ 	if (p != NULL)
+-		error("MS-CHAP authentication failed: %v", p);
++	{
++		/* always use the error code (if any). */
++		if (err > 0)
++			error("E=%d MS-CHAP authentication failed: %v", err, p);
++		else
++			error("MS-CHAP authentication failed: %v", p);
++	}
+ 	free(msg);
+ }
+ 

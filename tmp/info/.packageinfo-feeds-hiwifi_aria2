@@ -1,0 +1,20 @@
+Source-Makefile: package/feeds-hiwifi/aria2/Makefile
+Package: aria2
+Submenu: File Transfer
+Version: 1.18.3-20140330
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +zlib +libstdcpp
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: lightweight download utility
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: aria2-1.18.3.tar.bz2
+Type: ipkg
+Description:  aria2 is a lightweight multi-protocol & multi-source command-line download
+ utility
+http://aria2.sourceforge.net/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

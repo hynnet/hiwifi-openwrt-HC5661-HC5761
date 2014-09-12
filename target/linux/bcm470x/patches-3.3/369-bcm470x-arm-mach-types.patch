@@ -1,0 +1,9 @@
+--- a/arch/arm/tools/mach-types
++++ b/arch/arm/tools/mach-types
+@@ -4111,3 +4111,6 @@
+ tn_muninn		MACH_TN_MUNINN		TN_MUNINN		4157
+ rampage			MACH_RAMPAGE		RAMPAGE			4158
+ visstrim_mv10		MACH_VISSTRIM_MV10	VISSTRIM_MV10		4159
++brcm_gen		MACH_BRCM_GEN		BRCM_GEN		5555
++brcm_ns			MACH_BRCM_NS		BRCM_NS			9990
++brcm_ns_qt		MACH_BRCM_NS_QT		BRCM_NS_QT		9992

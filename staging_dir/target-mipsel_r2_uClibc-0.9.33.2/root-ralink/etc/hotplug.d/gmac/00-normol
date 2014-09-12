@@ -1,0 +1,31 @@
+#!/bin/sh
+
+. /lib/ralink.sh
+
+wan_ifname="eth2.2"
+wan_port=0
+gmac_hotplug_cb() {
+	for script_file in /etc/hotplug.d/gmac/$2/* ; do
+		$script_file $1 $3
+	done
+}
+
+case $(tw_board_name) in
+BL-H750AC)
+	wan_port=4
+	;;
+*)
+	wan_port=0
+	;;
+esac
+
+if [ "$PORTNUM" -eq "$wan_port" ]; then
+	case "$ACTION" in
+		"linkup")
+			gmac_hotplug_cb start wan $wan_ifname
+			;;
+		"linkdown")
+			gmac_hotplug_cb stop wan $wan_ifname
+			;;
+	esac
+fi

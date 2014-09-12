@@ -1,0 +1,47 @@
+#!/bin/sh
+# Copyright (C) 2012-2013 hiwifi.com
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
+
+blkdev=`dirname $DEVPATH`
+device=`basename $DEVPATH`
+
+case "$device" in
+"sd"*)
+	case "$ACTION" in
+	add)
+		mkdir -p /tmp/$device
+
+		#vfat & ntfs-3g check
+		if [ `which fdisk` ]; then
+			isntfs=`fdisk -l | grep $device | grep NTFS`
+			isvfat=`fdisk -l | grep $device | grep FAT`
+			isntfs3g=`which ntfs-3g`
+		else
+			isntfs=""
+			isvfat=""
+		fi
+
+		# mount
+		if [ "$isntfs" -a "$isntfs3g" ]; then
+			ntfs-3g -o big_writes,noatime,nls=utf8 /dev/$device /tmp/$device
+			if [ $? -ne "0" ]; then
+				mount /dev/$device /tmp/$device
+			fi
+		elif [ "$isvfat" ]; then
+			mount -o noatime,fmask=0000,dmask=0000,iocharset=utf8 /dev/$device /tmp/$device
+			if [ $? -ne "0" ]; then
+				mount /dev/$device /tmp/$device
+			fi
+		else
+			mount /dev/$device /tmp/$device
+		fi	
+		;;
+	remove)
+		umount -l /tmp/$device
+		;;
+	esac
+	;;
+esac
+

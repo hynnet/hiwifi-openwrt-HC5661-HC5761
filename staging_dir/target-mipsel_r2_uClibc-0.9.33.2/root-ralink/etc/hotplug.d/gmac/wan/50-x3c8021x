@@ -1,0 +1,14 @@
+#!/bin/sh /etc/rc.common
+
+Enabled=`uci get x3c8021x.@base_set[0].enable 2>/dev/null`
+
+[ ${Enabled:-0} -ne 1 ] && exit 0
+
+stop() {
+	/etc/init.d/x3c8021x stop
+}
+
+start() {
+	/etc/init.d/x3c8021x start
+}
+

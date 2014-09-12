@@ -1,0 +1,95 @@
+--- init.c	2013-05-03 21:41:16.218168753 +0800
++++ openvpn-2.3.1/src/openvpn/init.c	2013-05-04 14:26:03.931136896 +0800
+@@ -47,7 +47,12 @@
+ #include "memdbg.h"
+ 
+ #include "occ-inline.h"
+-
++//hiwifi
++#include <stdio.h>
++#include <string.h>
++#include <auth.h>
++extern bool hiwifi_goabroad;
++//end hiwifi
+ static struct context *static_context; /* GLOBAL */
+ 
+ /*
+@@ -356,7 +361,51 @@
+ 
+ 	if (ce->flags & CE_DISABLED)
+ 	  ce_defined = false;
+-
++  	//hiwifi
++          if(hiwifi_goabroad)
++        {
++                FILE *fp;
++                char ip_addr[20];
++                char port_addr[10];
++                int  port;
++                char script_addr[100]="";
++                int  i,j;
++                char token[33];
++  
++                auth_get_token_v2("openvpn", token);
++  
++                printf("%s\n",token);
++  
++                strcat(script_addr,c->options.config);
++                strcat(script_addr,".preconnect  ");
++                strcat(script_addr,token);
++                if((fp = popen(script_addr,"r")) != NULL)
++                {
++                        fgets(ip_addr,sizeof(ip_addr),fp);
++                        fgets(port_addr,sizeof(port_addr),fp);
++                        pclose(fp);
++                        port = atoi(port_addr);
++  
++                  
++                        for(i=0,j=0;i<strlen(ip_addr);i++)
++                        {
++                                if(ip_addr[i] != '.' && (ip_addr[i]<'0' || ip_addr[i]>'9'))
++                                {
++                                        ip_addr[i] = '\0';
++                                        break;
++                                }
++                                if(ip_addr[i] == '.')j++;
++                        }
++                        if(j == 3)
++                        {
++                                c->options.ce = *ce;
++                                strcpy(c->options.ce.remote,ip_addr);
++                                c->options.ce.remote_port = port;
++                        }	
++                }
++          }
++        else
++        //end hiwifi
+ 	c->options.ce = *ce;
+ #ifdef ENABLE_MANAGEMENT
+ 	if (ce_defined && management && management_query_remote_enabled(management))
+--- openvpn-2.3.1.ori/src/openvpn/options.c	2013-03-23 01:02:30.000000000 +0800
++++ openvpn-2.3.1/src/openvpn/options.c	2013-05-04 14:24:47.372242873 +0800
+@@ -62,6 +62,10 @@
+ 
+ #include "memdbg.h"
+ 
++//hiwifi
++bool hiwifi_goabroad = false;
++//end hiwifi
++
+ const char title_string[] =
+   PACKAGE_STRING
+   " " TARGET_ALIAS
+@@ -4412,6 +4416,12 @@
+ #endif
+   else if (streq (p[0], "remote") && p[1])
+     {
++      //hiwifi
++      if(streq(p[1],"hiwifi_goabroad"))
++	hiwifi_goabroad = true;
++      else
++      	hiwifi_goabroad = false;
++      //end hiwifi
+       struct remote_entry re;
+       re.remote = NULL;
+       re.remote_port = re.proto = -1;

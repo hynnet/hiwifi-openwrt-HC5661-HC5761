@@ -1,0 +1,21 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org 
+
+. /lib/platform.sh
+
+START=12
+start() {
+	type tw_set_bridge_port >/dev/null && {
+		local enabled
+		config_load bridge
+		config_get_bool enabled brdige enable 0
+		tw_set_bridge_port $enabled
+	}
+}
+
+stop() {
+	type tw_set_bridge_port >/dev/null && {
+		tw_set_bridge_port 0
+	}
+}
+

@@ -1,0 +1,22 @@
+config option
+	option boot '1'
+
+config mentohust
+	option Username ''
+	option Password ''
+	option Nic 'eth1'
+	option IP ''
+	option Mask ''
+	option Gateway ''
+	option DNS '0.0.0.0'
+	option PingHost '0.0.0.0'
+	option Timeout '8'
+	option EchoInterval '30'
+	option RestartWait '15'
+	option MaxFail '8'
+	option StartMode '0'
+	option DhcpMode '0'
+	option DaemonMode '2'
+	option ShowNotify '0'
+	option Version '0.00'
+	option dhcpscript 'uci get network.wan.ifname|xargs udhcpc -i'

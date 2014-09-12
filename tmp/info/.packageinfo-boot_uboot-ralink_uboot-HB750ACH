@@ -1,0 +1,19 @@
+Source-Makefile: package/boot/uboot-ralink/uboot-HB750ACH/Makefile
+Package: uboot-ralink-BL-H750AC
+Default: y if (TARGET_ralink_mt7620a_custom_HB750ACH)
+Version: 1.1.3-20140604
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_ralink_mt7620a_custom_HB750ACH
+Menu-Depends: 
+Provides: 
+Build-Variant: BL-H750AC
+Section: boot
+Category: Boot Loaders
+Title: U-boot for BL-H750AC MT7620a+MT7610E board(B-LINK)
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: bin
+Description: U-boot for BL-H750AC MT7620a+MT7610E board(B-LINK)
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

@@ -1,0 +1,65 @@
+diff --git a/libc-compat.h b/libc-compat.h
+old mode 100644
+new mode 100755
+index adcf63b..e3d6d77
+--- a/libc-compat.h
++++ b/libc-compat.h
+@@ -22,4 +22,9 @@
+ #   define IP_TRANSPARENT 19
+ #endif
+ 
++#ifndef IP_HWF_DSTADDR
++#   warning Using hardcoded value for IP_HWF_DSTADDR as libc headers do not define it.
++#   define IP_HWF_DSTADDR 23
++#endif
++
+ #endif // 67C91670_FCCB_4855_BDF7_609F1EECB8B4
+diff --git a/redudp.c b/redudp.c
+old mode 100644
+new mode 100755
+index 05460dc..33e2b07
+--- a/redudp.c
++++ b/redudp.c
+@@ -769,10 +769,9 @@ static int redudp_init_instance(redudp_instance *instance)
+ 		if (0 != redudp_transparent(fd))
+ 			goto fail;
+ 
+-		error = setsockopt(fd, SOL_IP, IP_RECVORIGDSTADDR, &on, sizeof(on));
++		error = setsockopt(fd, SOL_IP, IP_HWF_DSTADDR, &on, sizeof(on));
+ 		if (error) {
+-			log_errno(LOG_ERR, "setsockopt(listener, SOL_IP, IP_RECVORIGDSTADDR)");
+-			goto fail;
++			log_errno(LOG_WARNING, "setsockopt(listener, SOL_IP, IP_HWF_DSTADDR)");
+ 		}
+ 
+ 		log_error(LOG_DEBUG, "redudp @ %s: TPROXY", red_inet_ntop(&instance->config.bindaddr, buf, sizeof(buf)));
+diff --git a/utils.c b/utils.c
+old mode 100644
+new mode 100755
+index 7de3969..452fa85
+--- a/utils.c
++++ b/utils.c
+@@ -56,12 +56,12 @@ int red_recv_udp_pkt(int fd, char *buf, size_t buflen, struct sockaddr_in *inadd
+ 		for (struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+ 			if (
+ 				cmsg->cmsg_level == SOL_IP &&
+-				cmsg->cmsg_type == IP_ORIGDSTADDR &&
++				cmsg->cmsg_type == IP_HWF_DSTADDR &&
+ 				cmsg->cmsg_len >= CMSG_LEN(sizeof(*toaddr))
+ 			) {
+ 				struct sockaddr_in* cmsgaddr = (struct sockaddr_in*)CMSG_DATA(cmsg);
+ 				char buf[RED_INET_ADDRSTRLEN];
+-				log_error(LOG_DEBUG, "IP_ORIGDSTADDR: %s", red_inet_ntop(cmsgaddr, buf, sizeof(buf)));
++				log_error(LOG_DEBUG, "IP_HWF_DSTADDR: %s", red_inet_ntop(cmsgaddr, buf, sizeof(buf)));
+ 				memcpy(toaddr, cmsgaddr, sizeof(*toaddr));
+ 			}
+ 			else {
+@@ -70,7 +70,7 @@ int red_recv_udp_pkt(int fd, char *buf, size_t buflen, struct sockaddr_in *inadd
+ 			}
+ 		}
+ 		if (toaddr->sin_family != AF_INET) {
+-			log_error(LOG_WARNING, "(SOL_IP, IP_ORIGDSTADDR) not found");
++			log_error(LOG_WARNING, "(SOL_IP, IP_HWF_DSTADDR) not found");
+ 			return -1;
+ 		}
+ 	}

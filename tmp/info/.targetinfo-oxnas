@@ -1,0 +1,28 @@
+Source-Makefile: target/linux/oxnas/Makefile
+Target: oxnas
+Target-Board: oxnas
+Target-Name: Oxford OXE8x0
+Target-Path: /home/hiwifi/openwrt-trunk-hiwifi
+Target-Arch: arm
+Target-Arch-Packages: oxnas
+Target-Features: ext4 gpio pci squashfs ubifs usb
+Target-Depends: 
+Target-Optimization: -Os -pipe -march=armv6 -mtune=arm1136j-s -fno-caller-saves
+Linux-Version: 3.1.10
+Linux-Release: 1
+Linux-Kernel-Arch: arm
+Target-Description:
+	Build firmware image for NAS78xx.
+@@
+Default-Packages: base-files libc libgcc busybox dropbear mtd uci opkg hotplug2 netifd dnsmasq iptables ppp ppp-mod-pppoe kmod-ipt-nathelper firewall hostapd kmod-usb2 kmod-usb-ohci kmod-usb-storage kmod-fs-ext4 kmod-fs-vfat kmod-nls-cp437 kmod-nls-utf8  kmod-nls-iso8859-1 uboot-envtools mtd-utils mtd-utils-flash-erase mtd-utils-flash-eraseall mtd-utils-nanddump mtd-utils-nandwrite  mtd-utils-ubiattach mtd-utils-ubidetach mtd-utils-ubiformat mtd-utils-ubimkvol mtd-utils-ubimkvol
+Target-Profile: Pogoplug
+Target-Profile-Name: Pogoplug
+Target-Profile-Packages: 
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Pogoplug board
+@@
+
+

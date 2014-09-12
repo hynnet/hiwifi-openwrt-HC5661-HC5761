@@ -1,0 +1,17 @@
+--- a/fs/fat/file.c
++++ b/fs/fat/file.c
+@@ -400,10 +400,14 @@
+ 		inode_dio_wait(inode);
+ 
+ 		if (attr->ia_size > inode->i_size) {
++#if 0
+ 			error = fat_cont_expand(inode, attr->ia_size);
+ 			if (error || attr->ia_valid == ATTR_SIZE)
+ 				goto out;
+ 			attr->ia_valid &= ~ATTR_SIZE;
++#endif
++			error = -EPERM;
++			goto out;
+ 		}
+ 	}
+ 

@@ -1,0 +1,20 @@
+Source-Makefile: package/package-hiwifi/shadowsocks/Makefile
+Package: shadowsocks
+Menu: 1
+Submenu: VPN
+Version: master-20130924-eb9d31869e1d7590cd8c2fb1e7d226ac6cf32fad-20140618
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +libauth +libtw +libhwf-log
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: Socks5 solution for VPN
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: shadowsocks-master-20130924-eb9d31869e1d7590cd8c2fb1e7d226ac6cf32fad.tar.gz
+Type: ipkg
+Description:   Socks5 solution for VPN
+http://www.shadowsocks.com
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

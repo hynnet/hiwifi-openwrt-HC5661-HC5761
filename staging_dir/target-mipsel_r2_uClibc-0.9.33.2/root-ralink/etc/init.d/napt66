@@ -1,0 +1,53 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2012 tsl0922@sina.com
+
+#START=99
+#STOP=10
+
+dev=sit1
+nic=eth1.1
+# 隧道另一端的IPv4地址
+remote_ip=210.45.176.28
+# IPv6地址前缀
+ipv6_prefix=2001:250:5405:1:200:5efe
+# 获取本地IPv4地址
+local_ip=$(ifconfig|grep -A2 'eth1.1'|grep 'inet addr:'|cut -d: -f2 |awk '{ print $1}')
+
+start()
+{
+	# 添加sit接口并设置IPv6地址和路由
+	ip tunnel add $dev mode sit remote $remote_ip local $local_ip
+	ifconfig $dev up
+	ifconfig $dev add $ipv6_prefix:$local_ip
+	route -A inet6 add 2000::/3 gw fe80::5efe:$remote_ip $dev
+	# 打开br-lan的IPv6转发选项,这个动作会清空IPv6默认路由
+	sysctl -w net.ipv6.conf.br-lan.forwarding=1
+	ip6tables -A INPUT -p icmpv6 -m mac --mac-source "00:17:59:80:74:10" -j DROP
+	# 启动radvd
+	/etc/init.d/radvd start
+	# 重启eth1.1以便WAN口立刻获得外网无状态IPv6配置,然后通过dhcp获得IPv4配置。如不写下面三句,可能要稍等一段时间才能访问IPv6网络。
+	ifconfig $nic down
+	ifconfig $nic up
+	# 重新获取IP地址
+	udhcpc -q -i $nic
+	# 加载 NAPT66 模块,在参数中指明 WAN 接口
+	insmod /lib/modules/$(uname -r)/napt66.ko wan_if=$dev
+}
+
+stop()
+{
+	# 停止radvd
+	/etc/init.d/radvd stop
+	# 卸载NAPT66模块
+	rmmod napt66
+	# 停止接口
+	ifconfig $dev down
+	# 删除接口
+	ip tunnel del $dev
+}
+
+restart()
+{
+	stop
+	start
+}

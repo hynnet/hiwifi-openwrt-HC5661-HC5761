@@ -1,0 +1,18 @@
+Source-Makefile: package/feeds-hiwifi/lua-setuid/Makefile
+Package: lua-setuid
+Version: 1-20140521
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +liblua
+Menu-Depends: 
+Provides: 
+Section: libs
+Category: Turbo Wireless
+Title: lua-setuid
+Maintainer: Mike Savage 
+Source: lua-setuid-1-20140521.tar.gz
+Type: ipkg
+Description:  A Lua module that provides setuid and chroot functionality.
+https://github.com/mikejsavage/lua-setuid
+Mike Savage 
+@@
+
+

@@ -1,0 +1,38 @@
+--- a/src/http.lua	2007-10-15 12:21:05.000000000 +0800
++++ b/src/http.lua	2013-12-06 15:00:53.495218613 +0800
+@@ -118,17 +118,13 @@
+     return h
+ end
+ 
+-function metat.__index:sendrequestline(method, uri)
+-    local reqline = string.format("%s %s HTTP/1.1\r\n", method or "GET", uri)
+-    return self.try(self.c:send(reqline))
+-end
+-
+-function metat.__index:sendheaders(headers)
++function metat.__index:sendheaders(method, uri, headers)
+     local h = "\r\n"
+     for i, v in base.pairs(headers) do
+         h = i .. ": " .. v .. "\r\n" .. h
+     end
+-    self.try(self.c:send(h))
++    local reqline = string.format("%s %s HTTP/1.1\r\n", method or "GET", uri)
++    self.try(self.c:send(reqline .. h))
+     return 1
+ end
+ 
+@@ -292,8 +288,12 @@
+     local nreqt = adjustrequest(reqt)
+     local h = open(nreqt.host, nreqt.port, nreqt.create)
+     -- send request line and headers
+-    h:sendrequestline(nreqt.method, nreqt.uri)
+-    h:sendheaders(nreqt.headers)
++    -- HIWIFI: combine them together in one buffer before sending.
++    -- In original implementation, request line and headers maybe sent in
++    -- separated TCP packets. Buggy firewall wouldn't ACK the first packet
++    -- and hangs client in retransmission on the first packet. The second
++    -- packet which contains headers will never be sent.
++    h:sendheaders(nreqt.method, nreqt.uri, nreqt.headers)
+     -- if there is a body, send it
+     if nreqt.source then
+         h:sendbody(nreqt.headers, nreqt.source, nreqt.step) 

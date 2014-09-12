@@ -1,0 +1,19 @@
+Source-Makefile: package/package-hiwifi/kproxy/Makefile
+Package: kmod-kproxy
+Submenu: HiWiFi Kernel Proxy
+Version: <LINUX_VERSION>+1.0.0-20140529
+Depends: +kmod-hwf-core
+Menu-Depends: 
+Provides: 
+Build-Depends: PACKAGE_kmod-hwf-core:kmod-hwf_core
+Section: kernel
+Category: Kernel modules
+Title: HiWiFi Kernel Proxy
+Maintainer: Chen Xu<chen.xu@hiwifi.tw>
+Source: 
+Type: ipkg
+Description:   This package contains HiWiFi extensions.
+Chen Xu<chen.xu@hiwifi.tw>
+@@
+
+

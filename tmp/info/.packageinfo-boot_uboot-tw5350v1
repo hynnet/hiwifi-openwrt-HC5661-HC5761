@@ -1,0 +1,20 @@
+Source-Makefile: package/boot/uboot-tw5350v1/Makefile
+Package: uboot-ramips-tw5350v1
+Default: y if (TARGET_ramips_rt305x_TW5350V1 || TARGET_ramips_rt305x_Default)
+Version: 1.1.3-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_ramips
+Menu-Depends: 
+Provides: 
+Build-Variant: tw5350v1
+Section: boot
+Category: Boot Loaders
+Title: U-boot for tw5350v1 RT5350 board
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: u-boot-1.1.3.tar.bz2
+Type: bin
+Description: U-boot for tw5350v1 RT5350 board
+http://www.denx.de/wiki/U-Boot
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

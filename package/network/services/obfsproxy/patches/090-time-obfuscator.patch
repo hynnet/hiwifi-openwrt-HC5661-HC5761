@@ -1,0 +1,29 @@
+--- obfsproxy-0.1.4.ori/src/protocols/obfs2.c	2012-04-25 22:10:59.000000000 +0800
++++ obfsproxy-0.1.4/src/protocols/obfs2.c	2013-03-26 18:14:11.185168840 +0800
+@@ -26,6 +26,8 @@
+  * keys.
+  **/
+ 
++#include <time.h>
++#include <stdio.h>
+ #include "util.h"
+ 
+ #define PROTOCOL_OBFS2_PRIVATE
+@@ -393,6 +395,7 @@
+   obfs2_state_t *state = xzalloc(sizeof(obfs2_state_t));
+   uchar *seed;
+   const char *send_pad_type;
++  char shared_secret_buf[SHARED_SECRET_LENGTH + 6];
+ 
+   state->state = ST_WAIT_FOR_KEY;
+   state->we_are_initiator = (cfg->mode != LSN_SIMPLE_SERVER);
+@@ -405,7 +408,8 @@
+   }
+ 
+   /* Generate our seed */
+-  memcpy(state->secret_seed, cfg->shared_secret, SHARED_SECRET_LENGTH);
++  snprintf(shared_secret_buf, SHARED_SECRET_LENGTH + 6, "%d%s", (int)time(NULL)>>16, cfg->shared_secret);
++  memcpy(state->secret_seed, shared_secret_buf, SHARED_SECRET_LENGTH);
+ 
+   if (random_bytes(seed, OBFUSCATE_SEED_LENGTH) < 0) {
+     free(state);

@@ -1,0 +1,17 @@
+Source-Makefile: package/hctools/Makefile
+Package: hctools
+Version: 2.2-1.2
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libbdinfo +libopenssl
+Menu-Depends: 
+Provides: 
+Section: utils
+Category: Utilities
+Title: hardcore target tools for board control
+Maintainer: Duke Wu <duke.wu@ikwcn.com>
+Source: 
+Type: ipkg
+Description: Provide supporting for board initialize and board reset.
+Duke Wu <duke.wu@ikwcn.com>
+@@
+
+

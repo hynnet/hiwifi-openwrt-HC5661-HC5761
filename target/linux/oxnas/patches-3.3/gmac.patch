@@ -1,0 +1,21 @@
+--- linux-3.3.8/drivers/net/Makefile.orig	2013-06-03 22:11:42.000000000 +0800
++++ linux-3.3.8/drivers/net/Makefile	2013-06-03 22:39:53.804735384 +0800
+@@ -16,6 +16,7 @@
+ obj-$(CONFIG_NET) += Space.o loopback.o
+ obj-$(CONFIG_NETCONSOLE) += netconsole.o
+ obj-y += phy/
++obj-$(CONFIG_SYNOPSYS_GMAC) += gmac/
+ obj-$(CONFIG_RIONET) += rionet.o
+ obj-$(CONFIG_NET_TEAM) += team/
+ obj-$(CONFIG_TUN) += tun.o
+--- linux-3.3.8/drivers/net/Kconfig.orig	2012-06-01 15:16:13.000000000 +0800
++++ linux-3.3.8/drivers/net/Kconfig	2013-06-03 22:41:12.668732911 +0800
+@@ -277,6 +277,8 @@
+ 
+ source "drivers/net/phy/Kconfig"
+ 
++source "drivers/net/gmac/Kconfig"
++
+ source "drivers/net/plip/Kconfig"
+ 
+ source "drivers/net/ppp/Kconfig"

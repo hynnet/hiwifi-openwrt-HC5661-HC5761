@@ -1,0 +1,27 @@
+#!/bin/sh
+
+. /etc/functions.sh
+do_button() {
+	local btn_name
+	local btn_act
+	local btn_handler
+	local btn_time_min
+	local btn_time_max
+
+	config_get btn_name $1 name
+	config_get btn_act $1 action
+	config_get btn_handler $1 handler
+	config_get btn_time_min $1 min
+	config_get btn_time_max $1 max
+
+	[ "$ACTION" = "$btn_act" -a "$BUTTON" = "$btn_name" -a -n "$btn_handler" ] && {
+		[ -z "$btn_time_min" -o -z "$btn_time_max" ] && eval $btn_handler
+		[ -n "$btn_time_min" -a -n "$btn_time_max" ] && {
+			[ $btn_time_min -le $SEEN -a $btn_time_max -ge $SEEN ] && eval $btn_handler
+		}
+	}
+}
+
+config_load system
+#'button' here should be the same as set system.$cfg='button' in uci-defalts.sh
+config_foreach do_button button

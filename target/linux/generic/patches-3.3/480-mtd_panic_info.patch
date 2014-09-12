@@ -1,0 +1,69 @@
+--- a/include/linux/mtd/mtd.h
++++ b/include/linux/mtd/mtd.h
+@@ -180,6 +180,7 @@
+ 	 * wrappers instead.
+ 	 */
+ 	int (*erase) (struct mtd_info *mtd, struct erase_info *instr);
++	int (*panic_erase) (struct mtd_info *mtd, struct erase_info *instr);
+ 	int (*point) (struct mtd_info *mtd, loff_t from, size_t len,
+ 		      size_t *retlen, void **virt, resource_size_t *phys);
+ 	void (*unpoint) (struct mtd_info *mtd, loff_t from, size_t len);
+@@ -261,6 +262,15 @@
+ }
+ 
+ /*
++ * panic erase is an synchronous operation.
++ * support ATOMIC content
++ */
++static inline int mtd_panic_erase(struct mtd_info *mtd, struct erase_info *instr)
++{
++	return mtd->panic_erase(mtd, instr);
++}
++
++/*
+  * This stuff for eXecute-In-Place. phys is optional and may be set to NULL.
+  */
+ static inline int mtd_point(struct mtd_info *mtd, loff_t from, size_t len,
+--- a/drivers/mtd/mtdpart.c
++++ b/drivers/mtd/mtdpart.c
+@@ -306,6 +306,31 @@
+ 		instr->addr -= part->offset;
+ 		if (mtd->flags & MTD_ERASE_PARTIAL)
+ 			kfree(instr->erase_buf);
++	}
++
++	return ret;
++}
++
++static int part_panic_erase(struct mtd_info *mtd, struct erase_info *instr)
++{
++	struct mtd_part *part = PART(mtd);
++	int ret;
++	if (!(mtd->flags & MTD_WRITEABLE))
++		return -EROFS;
++	if (instr->addr >= mtd->size)
++		return -EINVAL;
++
++	instr->partial_start = false;
++	if (mtd->flags & MTD_ERASE_PARTIAL) {
++		return -EINVAL;
++	}
++
++	instr->addr += part->offset;
++	ret = mtd_panic_erase(part->master, instr);
++	if (ret) {
++		if (instr->fail_addr != MTD_FAIL_ADDR_UNKNOWN)
++			instr->fail_addr -= part->offset;
++		instr->addr -= part->offset;
+ 	}
+ 
+ 	return ret;
+@@ -534,6 +559,8 @@
+ 	if (master->block_markbad)
+ 		slave->mtd.block_markbad = part_block_markbad;
+ 	slave->mtd.erase = part_erase;
++	if (master->panic_erase)
++		slave->mtd.panic_erase = part_panic_erase;
+ 	slave->master = master;
+ 	slave->offset = part->offset;
+

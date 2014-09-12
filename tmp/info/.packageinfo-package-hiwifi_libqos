@@ -1,0 +1,19 @@
+Source-Makefile: package/package-hiwifi/libqos/Makefile
+Package: libqos
+Menu: 1
+Version: 0.0.1-20140609
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +kmod-smartqos
+Menu-Depends: 
+Provides: 
+Section: libs
+Category: Libraries
+Title: libqos
+Maintainer: Guo Baolong <baolong.guo@hiwifi.tw>
+Source: 
+Type: ipkg
+Description: 	libqos is used to set QoS priority of user's network traffic.
+http://www.hiwifi.com/
+Guo Baolong <baolong.guo@hiwifi.tw>
+@@
+
+

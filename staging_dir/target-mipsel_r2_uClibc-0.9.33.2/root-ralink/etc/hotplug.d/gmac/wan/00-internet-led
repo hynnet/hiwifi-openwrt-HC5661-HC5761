@@ -1,0 +1,9 @@
+#!/bin/sh /etc/rc.common
+
+stop() {
+	wan_ifname=$(uci get network.wan.ifname)
+
+	if [ $1 = $wan_ifname ]; then
+		setled off green internet
+	fi
+}

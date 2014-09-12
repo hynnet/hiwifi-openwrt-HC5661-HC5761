@@ -1,0 +1,20 @@
+Source-Makefile: package/network/services/mentohust/Makefile
+Package: mentohust
+Submenu: CERNET
+Version: 0.3.1-20140529.1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpcap
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: Another RuiJie 802.1X client for embedded devices
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: mentohust-0.3.1.tar.gz
+Type: ipkg
+Description:  802.1X client compatible with RuiJie.
+ Support <ALL> RuiJie clients!
+http://code.google.com/p/mentohust/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

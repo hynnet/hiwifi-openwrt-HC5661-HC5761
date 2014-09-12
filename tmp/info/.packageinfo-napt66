@@ -1,0 +1,19 @@
+Source-Makefile: package/napt66/Makefile
+Package: kmod-napt66
+Submenu: Netfilter Extensions
+Version: <LINUX_VERSION>+0.2-20130903.1
+Depends: +ip6tables +radvd
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: kmod-napt66
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: napt66-0.2.tar.gz
+Type: ipkg
+Description:  Stateful IPv6-to-IPv6 Network Address Port Translation.
+http://code.google.com/p/napt66/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

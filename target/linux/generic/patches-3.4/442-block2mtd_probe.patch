@@ -1,0 +1,56 @@
+--- a/drivers/mtd/devices/block2mtd.c
++++ b/drivers/mtd/devices/block2mtd.c
+@@ -247,6 +247,53 @@ static void block2mtd_sync(struct mtd_in
+ 	return;
+ }
+ 
++static int _open_bdev(struct block2mtd_dev *dev)
++{
++	const fmode_t mode = FMODE_READ | FMODE_WRITE | FMODE_EXCL;
++	struct block_device *bdev;
++
++	/* Get a handle on the device */
++	bdev = blkdev_get_by_path(dev->devname, mode, dev);
++#ifndef MODULE
++	if (IS_ERR(bdev)) {
++		dev_t devt;
++
++		/* We might not have rootfs mounted at this point. Try
++		   to resolve the device name by other means. */
++
++		wait_for_device_probe();
++		devt = name_to_dev_t(dev->devname);
++		if (devt)
++			bdev = blkdev_get_by_dev(devt, mode, dev);
++	}
++#endif
++
++	if (IS_ERR(bdev)) {
++		ERROR("error: cannot open device %s", dev->devname);
++		return 1;
++	}
++	dev->blkdev = bdev;
++
++	if (MAJOR(bdev->bd_dev) == MTD_BLOCK_MAJOR) {
++		ERROR("attempting to use an MTD device as a block device");
++		return 1;
++	}
++
++	return 0;
++}
++
++static void _close_bdev(struct block2mtd_dev *dev)
++{
++	struct block_device *bdev;
++
++	if (!dev->blkdev)
++		return;
++
++	bdev = dev->blkdev;
++	invalidate_mapping_pages(dev->blkdev->bd_inode->i_mapping, 0, -1);
++	blkdev_put(dev->blkdev, FMODE_READ|FMODE_WRITE|FMODE_EXCL);
++	dev->blkdev = NULL;
++}
+ 
+ static void block2mtd_free_device(struct block2mtd_dev *dev)
+ {

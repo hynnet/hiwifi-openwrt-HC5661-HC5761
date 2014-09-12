@@ -1,0 +1,11 @@
+--- a/fs/fuse/fuse_i.h
++++ b/fs/fuse/fuse_i.h
+@@ -24,7 +24,7 @@
+ #include <linux/workqueue.h>
+ 
+ /** Max number of pages that can be used in a single read request */
+-#define FUSE_MAX_PAGES_PER_REQ 32
++#define FUSE_MAX_PAGES_PER_REQ 512
+ 
+ /** Bias for fi->writectr, meaning new writepages must not be sent */
+ #define FUSE_NOWRITE INT_MIN

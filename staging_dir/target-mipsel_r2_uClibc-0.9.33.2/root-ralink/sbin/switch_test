@@ -1,0 +1,70 @@
+#!/bin/sh
+
+switch_init() {
+	switch reg w 2014 10002 #port0
+	switch reg w 2114 10001 #port1
+	switch reg w 2214 10003 #port2
+	switch reg w 2314 10004 #port3
+	switch reg w 2414 10005 #port5
+
+	switch vlan set 0 1 01000011
+	switch vlan set 1 2 10000011
+	switch vlan set 2 3 00100011
+	switch vlan set 3 4 00010011
+	switch vlan set 4 5 00001011
+
+	vconfig add eth2 3
+	vconfig add eth2 4
+	vconfig add eth2 5
+
+	uci set network.wan.proto=static
+	uci set network.wan.ipaddr=192.168.200.1
+	uci set network.wan.netmask=255.255.255.0
+
+	ifup wan
+
+	ifconfig eth2.3 192.168.198.1 netmask 255.255.255.0
+	ifconfig eth2.4 192.168.197.1 netmask 255.255.255.0
+	ifconfig eth2.5 192.168.196.1 netmask 255.255.255.0
+}
+
+
+switch_reset() {
+	switch reg w 2014 10002 #port0
+	switch reg w 2114 10001 #port1
+	switch reg w 2214 10001 #port2
+	switch reg w 2314 10001 #port3
+	switch reg w 2414 10001 #port5
+
+	switch vlan set 0 1 01111111
+	switch vlan set 1 2 10000011
+	switch vlan set 2 3 00000011
+	switch vlan set 3 4 00000011
+	switch vlan set 4 5 00000011
+
+	uci set network.wan.proto=dhcp
+	ifup wan
+
+	ifconfig eth2.3 down
+	ifconfig eth2.4 down
+	ifconfig eth2.5 down
+
+	vconfig rem eth2.3
+	vconfig rem eth2.4
+	vconfig rem eth2.5	
+}
+
+while [ -n "$1" ]; do
+	case "$1" in
+		-s)
+			switch_init
+		;;
+		-p)
+			switch_reset
+		;;
+		*)
+			break
+		;;
+	esac
+	shift;
+done

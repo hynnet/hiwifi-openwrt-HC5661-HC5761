@@ -1,0 +1,34 @@
+diff -Nru linux-3.1.10/drivers/mtd/nand/Kconfig OX820-3.1-Linux/drivers/mtd/nand/Kconfig
+--- linux-3.1.10/drivers/mtd/nand/Kconfig	2012-01-18 23:33:18.000000000 +0800
++++ OX820-3.1-Linux/drivers/mtd/nand/Kconfig	2013-06-03 15:07:55.955823176 +0800
+@@ -530,4 +530,18 @@
+ 	  Enables support for NAND Flash chips on the ST Microelectronics
+ 	  Flexible Static Memory Controller (FSMC)
+ 
++config MTD_NAND_OX820
++	tristate "Support for NAND on 820 test board"
++	depends on MTD_NAND
++	help
++	  Enables support for NAND Flash chips wired onto 820 test board
++
++config MTD_NAND_OX820_POGO
++        tristate "Support for NAND on 820 PPV3 board"
++        depends on MTD_NAND
++        help
++          Enables support for NAND Flash chips wired onto 820 PPV3 board
++
++
++
+ endif # MTD_NAND
+diff -Nru linux-3.1.10/drivers/mtd/nand/Makefile OX820-3.1-Linux/drivers/mtd/nand/Makefile
+--- linux-3.1.10/drivers/mtd/nand/Makefile	2012-01-18 23:33:18.000000000 +0800
++++ OX820-3.1-Linux/drivers/mtd/nand/Makefile	2013-06-03 15:07:55.955823176 +0800
+@@ -42,6 +42,8 @@
+ obj-$(CONFIG_MTD_NAND_SH_FLCTL)		+= sh_flctl.o
+ obj-$(CONFIG_MTD_NAND_MXC)		+= mxc_nand.o
+ obj-$(CONFIG_MTD_NAND_SOCRATES)		+= socrates_nand.o
++obj-$(CONFIG_MTD_NAND_OX820)		+= ox820_nand.o
++obj-$(CONFIG_MTD_NAND_OX820_POGO)            += ox820_pogo_nand.o
+ obj-$(CONFIG_MTD_NAND_TXX9NDFMC)	+= txx9ndfmc.o
+ obj-$(CONFIG_MTD_NAND_NUC900)		+= nuc900_nand.o
+ obj-$(CONFIG_MTD_NAND_NOMADIK)		+= nomadik_nand.o

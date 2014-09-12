@@ -1,0 +1,17 @@
+Source-Makefile: package/package-hiwifi/qos/Makefile
+Package: qos
+Version: 1.2-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +ip +tc +iptables +kmod-sched +kmod-sched-connmark +kmod-sched-core +kmod-ifb
+Menu-Depends: 
+Provides: 
+Section: utils
+Category: Utilities
+Title: Smart qos daemon server
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: 	A smart qos daemon server
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

@@ -1,0 +1,97 @@
+if ARCH_OX820
+
+menu "Oxford Semiconductor NAS Options"
+
+choice
+	prompt "OXNAS system type"
+	default OXNAS_VERSION_OX820
+
+config OXNAS_VERSION_OX820
+	bool "OX820"
+	select USB_ARCH_HAS_EHCI
+	select ARCH_WANT_OPTIONAL_GPIOLIB
+	help
+	  Support for the OX820 SoC
+
+endchoice
+
+menu "OX820 Implementations"
+
+config MACH_POGOPLUGV3
+	bool "Pogoplug V3"
+	default y
+	help
+	 Support for the Cloud Engines Pogoplug V3 (Classic)
+
+config MACH_POGOPLUGV3PCI
+        bool "Pogoplug V3 PCI"
+        default y
+        help
+         Support for the Cloud Engines Pogoplug V3 with PCI (Pro, Video)
+
+config MACH_MLP89626
+	bool "Medion Live P89626"
+	default y
+	help
+	 Support for the Medion Life P89626
+
+config MACH_IOMEGAHMNDCE
+	bool "iomega Home Media Network Hard Drive Cloud Edition"
+	default y
+	help
+	 Support for the iomega Home Media Network Hard Drive Cloud Edition
+
+endmenu
+
+config NOMINAL_RPSCLK_FREQ
+        int "The input clock frequency to the RPS"
+        default 6250000 
+        help
+	 The RPS clock feeds into a prescaler and from there feeds the RPS timers
+
+config DESCRIPTORS_PAGES
+        int "The number of SRAM memory pages to reserve for DMA descriptors"
+        default 1
+        help
+	 Determines the number of pages of SRAM that are reserved for DMA descriptors
+
+config SRAM_NUM_PAGES
+        int "The number of SRAM memory pages present in the system"
+        default 8
+        help
+	 Determines the number of pages of SRAM that are assumed to exist in the system memory map
+
+config ODRB_NUM_SATA_PRD_ARRAYS
+        int "ODRB_NUM_SATA_PRD_ARRAYS"
+        default 2
+        help
+	 sata somthings...
+
+config ARCH_OXNAS_MAX_SATA_SG_ENTRIES
+        int "ARCH_OXNAS_MAX_SATA_SG_ENTRIES"
+        default 64
+        help
+	 sata somthings... #2
+
+config ODRB_SATA_PRD_ARRAY_SIZE
+	int "ODRB_SATA_PRD_ARRAY_SIZE"
+	default 256
+	help
+	 sata somthing... #3
+
+config ARCH_OXNAS_UART1
+	bool "Support UART1"
+	default n
+	help
+	 This enables UART1 to be accessible to Linux.
+	 UARTs will be mapped to ttySn numbers from UART1 to UART4, only
+	 including those UARTs selected to be present
+config ARCH_OXNAS_CONSOLE_UART
+	int "The UART displaying console boot messages"
+	default 1 if ARCH_OX820
+	help
+	 We should not reset the UART that is already in use as the 
+	 console during boot
+
+endmenu
+endif

@@ -1,0 +1,100 @@
+--- a/drivers/bcma/core.c
++++ b/drivers/bcma/core.c
+@@ -30,6 +30,7 @@ void bcma_core_disable(struct bcma_devic
+ 	udelay(10);
+ 
+ 	bcma_awrite32(core, BCMA_RESET_CTL, BCMA_RESET_CTL_RESET);
++	bcma_aread32(core, BCMA_RESET_CTL);
+ 	udelay(1);
+ }
+ EXPORT_SYMBOL_GPL(bcma_core_disable);
+@@ -77,7 +78,7 @@ void bcma_core_set_clockmode(struct bcma
+ 			pr_err("HT force timeout\n");
+ 		break;
+ 	case BCMA_CLKMODE_DYNAMIC:
+-		pr_warn("Dynamic clockmode not supported yet!\n");
++		bcma_set32(core, BCMA_CLKCTLST, ~BCMA_CLKCTLST_FORCEHT);
+ 		break;
+ 	}
+ }
+--- a/drivers/bcma/driver_pci.c
++++ b/drivers/bcma/driver_pci.c
+@@ -24,14 +24,12 @@ u32 bcma_pcie_read(struct bcma_drv_pci *
+ 	return pcicore_read32(pc, BCMA_CORE_PCI_PCIEIND_DATA);
+ }
+ 
+-#if 0
+ static void bcma_pcie_write(struct bcma_drv_pci *pc, u32 address, u32 data)
+ {
+ 	pcicore_write32(pc, BCMA_CORE_PCI_PCIEIND_ADDR, address);
+ 	pcicore_read32(pc, BCMA_CORE_PCI_PCIEIND_ADDR);
+ 	pcicore_write32(pc, BCMA_CORE_PCI_PCIEIND_DATA, data);
+ }
+-#endif
+ 
+ static void bcma_pcie_mdio_set_phy(struct bcma_drv_pci *pc, u8 phy)
+ {
+@@ -224,3 +222,17 @@ out:
+ 	return err;
+ }
+ EXPORT_SYMBOL_GPL(bcma_core_pci_irq_ctl);
++
++void bcma_core_pci_extend_L1timer(struct bcma_drv_pci *pc, bool extend)
++{
++	u32 w;
++
++	w = bcma_pcie_read(pc, BCMA_CORE_PCI_DLLP_PMTHRESHREG);
++	if (extend)
++		w |= BCMA_CORE_PCI_ASPMTIMER_EXTEND;
++	else
++		w &= ~BCMA_CORE_PCI_ASPMTIMER_EXTEND;
++	bcma_pcie_write(pc, BCMA_CORE_PCI_DLLP_PMTHRESHREG, w);
++	bcma_pcie_read(pc, BCMA_CORE_PCI_DLLP_PMTHRESHREG);
++}
++EXPORT_SYMBOL_GPL(bcma_core_pci_extend_L1timer);
+--- a/include/linux/bcma/bcma.h
++++ b/include/linux/bcma/bcma.h
+@@ -26,6 +26,11 @@ struct bcma_chipinfo {
+ 	u8 pkg;
+ };
+ 
++struct bcma_boardinfo {
++	u16 vendor;
++	u16 type;
++};
++
+ enum bcma_clkmode {
+ 	BCMA_CLKMODE_FAST,
+ 	BCMA_CLKMODE_DYNAMIC,
+@@ -182,6 +187,12 @@ extern int bcma_arch_register_fallback_s
+ 		int (*sprom_callback)(struct bcma_bus *bus,
+ 		struct ssb_sprom *out));
+ 
++/* Set a fallback SPROM.
++ * See kdoc at the function definition for complete documentation. */
++extern int bcma_arch_register_fallback_sprom(
++		int (*sprom_callback)(struct bcma_bus *bus,
++		struct ssb_sprom *out));
++
+ struct bcma_bus {
+ 	/* The MMIO area. */
+ 	void __iomem *mmio;
+@@ -198,6 +209,8 @@ struct bcma_bus {
+ 
+ 	struct bcma_chipinfo chipinfo;
+ 
++	struct bcma_boardinfo boardinfo;
++
+ 	struct bcma_device *mapped_core;
+ 	struct list_head cores;
+ 	u8 nr_cores;
+--- a/include/linux/bcma/bcma_driver_pci.h
++++ b/include/linux/bcma/bcma_driver_pci.h
+@@ -133,6 +133,7 @@ struct pci_dev;
+ #define BCMA_CORE_PCI_DLLP_LRREG		0x120	/* Link Replay */
+ #define BCMA_CORE_PCI_DLLP_LACKTOREG		0x124	/* Link Ack Timeout */
+ #define BCMA_CORE_PCI_DLLP_PMTHRESHREG		0x128	/* Power Management Threshold */
++#define  BCMA_CORE_PCI_ASPMTIMER_EXTEND                0x01000000 /* > rev7: enable extend ASPM timer */
+ #define BCMA_CORE_PCI_DLLP_RTRYWPREG		0x12C	/* Retry buffer write ptr */
+ #define BCMA_CORE_PCI_DLLP_RTRYRPREG		0x130	/* Retry buffer Read ptr */
+ #define BCMA_CORE_PCI_DLLP_RTRYPPREG		0x134	/* Retry buffer Purged ptr */

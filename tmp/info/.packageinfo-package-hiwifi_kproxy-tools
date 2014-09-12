@@ -1,0 +1,18 @@
+Source-Makefile: package/package-hiwifi/kproxy-tools/Makefile
+Package: kproxy-tools
+Version: 1.0.0-20140617
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +kmod-kproxy
+Menu-Depends: 
+Provides: 
+Build-Depends: PACKAGE_kmod-kproxy:kmod-hwf_kproxy
+Section: utils
+Category: Utilities
+Title: HiWiFi Kproxy Tools
+Maintainer: Chen Xu<chen.xu@hiwifi.tw>
+Source: 
+Type: ipkg
+Description: 	Used to configure the kmod hwf_kproxy.
+Chen Xu<chen.xu@hiwifi.tw>
+@@
+
+

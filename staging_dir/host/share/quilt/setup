@@ -1,0 +1,231 @@
+#! /bin/bash
+
+#  This script is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2 as
+#  published by the Free Software Foundation.
+#
+#  See the COPYING and AUTHORS files for more details.
+
+# Read in library functions
+if [ "$(type -t patch_file_name)" != function ]
+then
+	if ! [ -r $QUILT_DIR/scripts/patchfns ]
+	then
+		echo "Cannot read library $QUILT_DIR/scripts/patchfns" >&2
+		exit 1
+	fi
+	. $QUILT_DIR/scripts/patchfns
+	if [ -n "$SUBDIR" ]
+	then
+		cd $SUBDIR
+		unset SUBDIR
+	fi
+fi
+
+check_for_existing_files() {
+	local dir status=0
+	for dir in $(awk ' $1 == "patch" { print $2 }' $tmpfile | uniq)
+	do
+		if [ -e "$prefix$dir/$QUILT_PATCHES" ]
+		then
+			printf $"Directory %s exists\n" \
+			       "$prefix$dir/$QUILT_PATCHES" >&2
+			status=1
+		fi
+		if [ -e "$prefix$dir/$QUILT_SERIES" ]
+		then
+			printf $"File %s exists\n" \
+			       "$prefix$dir/$QUILT_SERIES" >&2
+			status=1
+		fi
+	done
+	return $status
+}
+
+create_symlink() {
+	local target=$1 link=$2 up
+	if [ "${target:0:1}" = / -o "${link:0:1}" = / ]
+	then
+		ln -s "$target" "$link"
+		return
+	fi
+
+	set -- "$(echo "$PWD/$target" | \
+		  sed -r -e 's://:/:g' \
+			 -e ':again' \
+			 -e 's:/[^/]+/\.\.(/|$):\1:g' \
+			 -e 'tagain')" \
+	       "$(echo "$PWD/$link" | \
+	          sed -r -e 's://:/:g' \
+			 -e ':again' \
+			 -e 's:/[^/]+/\.\.(/|$):\1:g' \
+			 -e 'tagain')"
+	while [ "${1%%/*}" = "${2%%/*}" ]
+	do
+		set -- "${1#*/}" "${2#*/}"
+	done
+	up=$(echo "${2%/*}" | sed -re 's:[^/]+:..:g')
+	set -- "${up:+$up/}$1"
+	set -- "${1%/}"
+	ln -s "${1:-.}" "$link"
+}
+
+usage()
+{
+	printf $"Usage: quilt setup [-d path-prefix] [-v] [--sourcedir dir] {specfile|seriesfile}\n"
+	if [ x$1 = x-h ]
+	then
+		printf $"
+Initializes a source tree from an rpm spec file or a quilt series file.
+
+-d	Optional path prefix for the resulting source tree.
+
+--sourcedir
+	Directory that contains the package sources. Defaults to \`.'.
+
+-v	Verbose debug output.
+"
+		exit 0
+	else
+		exit 1
+	fi
+}
+
+options=`getopt -o d:vh --long sourcedir: -- "$@"`
+
+if [ $? -ne 0 ]
+then
+	usage
+fi
+
+eval set -- "$options"
+
+prefix=
+sourcedir=
+
+while true
+do
+	case "$1" in
+	-d)
+		prefix=${2%/}/
+		shift 2 ;;
+	-h)
+		usage -h ;;
+	-v)
+		verbose=-v
+		shift ;;
+	--sourcedir)
+		sourcedir=${2%/}/
+		shift 2 ;;
+	--)
+		shift
+		break ;;
+	esac
+done
+
+if [ $# -ne 1 ]
+then
+	usage
+fi
+
+[ -n "$sourcedir" ] && opt_sourcedir="--sourcedir $sourcedir"
+
+tmpfile=$(gen_tempfile)
+trap "rm -f $tmpfile" EXIT
+
+case "$1" in
+*.spec)
+	spec_file=$1
+
+	if ! $QUILT_DIR/scripts/inspect $verbose $opt_sourcedir \
+					"$spec_file" 2>&1 > $tmpfile
+	then
+		printf $"The %%prep section of %s failed; results may be incomplete\n" "$spec_file"
+		if [ -z "$verbose" ]
+		then
+			printf $"The -v option will show rpm's output\n"
+		fi
+	fi
+	;;
+*)
+	series_file=$1
+	# parse series file
+	while read line; do
+		set -- $line
+		case "$@" in
+		"# Sourcedir: "*)
+			shift 2
+			tar_dir="$@" ;;
+		"# Source: "*)
+			shift 2
+			echo "tar ${tar_dir:-.} $@" ;;
+		"# Patchdir: "*)
+			shift 2
+			patch_dir="$@" ;;
+		''|'#'*)
+			;;
+		*)
+			echo "patch ${patch_dir:-.} $@" ;;
+		esac
+	done < "$series_file" > $tmpfile
+	;;
+esac
+
+check_for_existing_files || exit 1
+
+while read tag dir arg1 arg2
+do
+	case "$tag" in
+	tar)
+		tarball=$sourcedir$arg1
+		if [ ! -e $tarball ]
+		then
+			printf $"File %s not found\n" "$tarball" >&2
+			exit 1
+		fi
+		printf $"Unpacking archive %s\n" "$tarball"
+		mkdir -p "${prefix:-.}" "$prefix$dir"
+		cat_file "$tarball" \
+		| tar xf - -C "$prefix$dir"
+		;;
+	esac
+done < $tmpfile
+
+while read tag dir arg1 arg2
+do
+	case "$tag" in
+	tar)
+		tar_dir="$dir"
+		[ "$tar_dir" = . ] && tar_dir=
+		tar_file="$arg1"
+		;;
+	patch)
+		[ -e "$prefix$dir/$QUILT_PATCHES" ] \
+		|| create_symlink "$sourcedir" "$prefix$dir/$QUILT_PATCHES"
+		if [ -n "$series_file" ]
+		then
+			[ -e "$prefix$dir/$QUILT_SERIES" ] \
+			|| create_symlink "$series_file" \
+					  "$prefix$dir/$QUILT_SERIES"
+		else
+			if ! [ -e "$prefix$dir/$QUILT_SERIES" ]
+			then
+				(	echo "# Patch series file for quilt," \
+					     "created by ${0##*/}"
+					[ -n "$tar_dir" ] \
+						&& echo "# Sourcedir: $tar_dir"
+					[ -n "$tar_file" ] \
+						&& echo "# Source: $tar_file"
+					echo "# Patchdir: $dir"
+					echo "#"
+				) > "$prefix$dir/$QUILT_SERIES"
+			fi
+			echo "$arg1" $arg2 >> "$prefix$dir/$QUILT_SERIES"
+		fi
+		;;
+	esac
+done < $tmpfile
+### Local Variables:
+### mode: shell-script
+### End:
+# vim:filetype=sh

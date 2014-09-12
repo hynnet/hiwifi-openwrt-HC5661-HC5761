@@ -1,0 +1,17 @@
+Source-Makefile: package/package-hiwifi/dnsanalyzer/Makefile
+Package: dnsanalyzer
+Version: 0.1-20130909.1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: utils
+Category: Utilities
+Title: Dnsmasq log analyzer daemon server
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: 	analyze the dnsmasq log to get a host list
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

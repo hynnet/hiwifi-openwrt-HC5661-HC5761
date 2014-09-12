@@ -1,0 +1,16 @@
+libblobmsg_json.so
+libc.so.0
+libcrypt-0.9.33.2.so
+libcrypt.so.0
+libdl-0.9.33.2.so
+libdl.so.0
+libgcc_s.so.1
+libjson-c.so.2
+libjson-c.so.2.0.1
+libm-0.9.33.2.so
+libm.so.0
+libuClibc-0.9.33.2.so
+libubox.so
+libubus.so
+libutil-0.9.33.2.so
+libutil.so.0

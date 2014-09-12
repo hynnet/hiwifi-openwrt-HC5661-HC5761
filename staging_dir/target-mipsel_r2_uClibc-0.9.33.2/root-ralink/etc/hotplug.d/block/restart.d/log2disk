@@ -1,0 +1,42 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2012-2013 HiWiFi Co., Ltd
+
+STORAGE=/tmp/data
+max_index=5
+
+start() {
+	if [ -L $STORAGE ]; then
+		[ -f "$STORAGE"/"$TBIN_FILE" ] && rm -rf "$STORAGE"/"$TBIN_FILE"
+
+		ls "$STORAGE"/sys_log* > /dev/null 2>&1
+		if [ $? -ne 0 ]; then
+			# No log file, seq set to 0
+			i=0
+		else
+			# current log file seq
+			i=`ls -l "$STORAGE"/sys_log*.log | awk END'{print NR}'`
+			if [ $i -gt $max_index ]; then
+				#only log 6 files
+
+				mv "$STORAGE"/sys_log"$max_index".log "$STORAGE"/l2dtmpf
+				rm -rf "$STORAGE"/sys_log*
+
+				mv "$STORAGE"/l2dtmpf "$STORAGE"/sys_log0.log
+				i=1
+			fi
+		fi
+		service_start /sbin/syslogd -O "$STORAGE"/sys_log"$i".log
+		service_start /sbin/klogd
+	fi
+}
+
+stop() {
+	service_stop /sbin/klogd
+	service_stop /sbin/syslogd
+}
+
+restart() {
+	stop
+	start
+}
+

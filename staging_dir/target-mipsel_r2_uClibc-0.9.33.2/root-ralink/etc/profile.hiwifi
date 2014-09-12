@@ -1,0 +1,10 @@
+#!/bin/sh
+
+export HIWIFI_DATA=/tmp/data
+export HIWIFI_BIGDATA=/tmp/bigdata
+export HIWIFI_CRYPTDATA=/tmp/cryptdata
+
+export HIWIFI_USR=/usr/local
+
+ulimit -c unlimited
+

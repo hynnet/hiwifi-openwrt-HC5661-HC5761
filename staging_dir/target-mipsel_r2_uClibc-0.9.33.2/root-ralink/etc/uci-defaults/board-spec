@@ -1,0 +1,22 @@
+#!/bin/sh
+# Copyright (C) 2013-2014 www.hiwifi,com
+#
+
+. /lib/ralink.sh
+
+board=$(tw_board_name)
+
+case "$board" in
+HC5641)
+	# disable console for NXP
+	sed -i '/ttyS1/d' /etc/inittab
+	# disable hwf_health_chk
+	sed -i '/hwf_health_chk/d' /etc/inittab
+	;;
+HB5811)
+	# disable hwf_health_chk
+	sed -i '/hwf_health_chk/d' /etc/inittab
+	;;
+esac
+
+exit 0

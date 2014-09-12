@@ -1,0 +1,32 @@
+Source-Makefile: package/spictl/Makefile
+Package: libspictl
+Version: 1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread 
+Menu-Depends: 
+Provides: 
+Section: libs
+Category: Libraries
+Title: hardcore target tools for SPI control
+Maintainer: Duke Wu <duke.wu@ikwcn.com>
+Source: 
+Type: ipkg
+Description: Provide supporting for writing or reading information in SPI flash.
+Duke Wu <duke.wu@ikwcn.com>
+@@
+
+Package: spictl
+Version: 1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libspictl
+Menu-Depends: 
+Provides: 
+Section: utils
+Category: Utilities
+Title: spi flash control utility
+Maintainer: Duke Wu <duke.wu@ikwcn.com>
+Source: 
+Type: ipkg
+Description: Command line frontend for the spi flash control library.
+Duke Wu <duke.wu@ikwcn.com>
+@@
+
+

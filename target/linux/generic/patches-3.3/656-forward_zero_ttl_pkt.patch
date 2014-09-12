@@ -1,0 +1,27 @@
+--- a/net/ipv4/ip_forward.c
++++ b/net/ipv4/ip_forward.c
+@@ -77,7 +77,23 @@
+ 	 *	that the packet's lifetime expired.
+ 	 */
+ 	if (ip_hdr(skb)->ttl <= 1)
+-		goto too_many_hops;
++	{
++		/*
++		 * some isps will send packet(from wan and ttl <= 1),
++		 * change ttl to 128 to let packet pass throught
++		 */
++		if (strncmp(skb->dev->name, "br", 2))
++		{
++			ip_hdr(skb)->ttl = 128;	
++
++			ip_hdr(skb)->check = 0;
++			ip_hdr(skb)->check = ip_fast_csum((u8*)(ip_hdr(skb)), ip_hdr(skb)->ihl);
++		}
++		else
++		{
++			goto too_many_hops;
++		}
++	}
+ 
+ 	if (!xfrm4_route_forward(skb))
+ 		goto drop;

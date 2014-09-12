@@ -1,0 +1,49 @@
+Source-Makefile: package/network/utils/iw-hcwifi/Makefile
+Package: libhcwifi
+Version: 1.1-8
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +kmod-hcwifi
+Menu-Depends: 
+Provides: 
+Section: libs
+Category: Libraries
+Title: Generalized Wireless Information Library (iw-hcwifi)
+Maintainer: Abu Cheng <abu.zheng@hiwifi.tw>
+Source: 
+Type: ipkg
+Description:   Wireless information library with consistent interface for proprietary hcwifi driver interfaces.
+Abu Cheng <abu.zheng@hiwifi.tw>
+@@
+
+Package: libhcwifi-lua
+Submenu: Lua
+Version: 1.1-8
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libhcwifi +liblua +lua
+Menu-Depends: 
+Provides: 
+Section: lang
+Category: Languages
+Title: libhcwifi Lua binding
+Maintainer: Abu Cheng <abu.zheng@hiwifi.tw>
+Source: 
+Type: ipkg
+Description:   This is the Lua binding for the iw-hcwifi library. It provides access to all enabled
+  backends.
+Abu Cheng <abu.zheng@hiwifi.tw>
+@@
+
+Package: iw-hcwifi
+Version: 1.1-8
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libhcwifi
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: command line utility for hcwifi
+Maintainer: Abu Cheng <abu.zheng@hiwifi.tw>
+Source: 
+Type: ipkg
+Description:   Command line frontend for the wireless information library.
+Abu Cheng <abu.zheng@hiwifi.tw>
+@@
+
+

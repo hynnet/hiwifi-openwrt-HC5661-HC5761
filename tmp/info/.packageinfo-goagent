@@ -1,0 +1,17 @@
+Source-Makefile: package/goagent/Makefile
+Package: goagent
+Version: 3.1.22
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +python +pyopenssl +gevent
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: GoAgent Proxy
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  GoAgent is a proxy tool to break the GFW.
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

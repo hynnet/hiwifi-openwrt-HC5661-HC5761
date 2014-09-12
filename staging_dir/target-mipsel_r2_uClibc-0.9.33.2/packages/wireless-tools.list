@@ -1,0 +1,9 @@
+./
+./usr
+./usr/include
+./usr/include/iwlib.h
+./usr/include/wireless.h
+./usr/lib
+./usr/lib/libiw.so.29
+./usr/lib/libiw.so
+./host

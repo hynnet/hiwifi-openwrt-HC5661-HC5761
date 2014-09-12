@@ -1,0 +1,19 @@
+Source-Makefile: package/package-hiwifi/smartqos/Makefile
+Package: kmod-smartqos
+Submenu: HiWiFi Smart QoS
+Version: <LINUX_VERSION>+1.0.0-20140617
+Depends: +kmod-hwf-core
+Menu-Depends: 
+Provides: 
+Build-Depends: PACKAGE_kmod-hwf-core:kmod-hwf-core
+Section: kernel
+Category: Kernel modules
+Title: HiWiFi Smart QoS
+Maintainer: Chen Xu<chen.xu@hiwifi.tw>
+Source: 
+Type: ipkg
+Description:   This package contains smart QoS modules.
+Chen Xu<chen.xu@hiwifi.tw>
+@@
+
+

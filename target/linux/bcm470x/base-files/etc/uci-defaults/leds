@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# Copyright (C) 2012-2013 hiwifi.com
+#
+
+. /lib/functions/uci-defaults.sh
+. /lib/bcm470x.sh
+
+board=$(bcm470x_board_name)
+
+case "$board" in
+HC8961)
+	ucidef_set_led_default "inet" "INET" "bcm:green:internet" "0"
+	ucidef_set_led_wlan "wlan2g" "WLAN2G" "bcm:green:wlan2g" "wifi0tpt"
+	ucidef_set_led_wlan "wlan5g" "WLAN5G" "bcm:green:wlan5g" "wifi1tpt"
+	;;
+
+esac
+
+ucidef_commit_leds
+
+exit 0

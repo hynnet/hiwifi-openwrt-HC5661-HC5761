@@ -1,0 +1,18 @@
+Source-Makefile: package/package-hiwifi/nf_tayga/Makefile
+Package: kmod-nf_tayga
+Submenu: IPv6
+Version: <LINUX_VERSION>-20140304
+Depends: +kmod-ipv6
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Kernel IPv4 to IPv6 Translation Module
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:   Kernel IPv4 to IPv6 Translation Module
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

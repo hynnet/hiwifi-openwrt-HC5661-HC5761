@@ -1,0 +1,30 @@
+--- a/net/8021q/vlan.c
++++ b/net/8021q/vlan.c
+@@ -198,6 +198,7 @@
+ 	struct vlan_net *vn = net_generic(net, vlan_net_id);
+ 	char name[IFNAMSIZ];
+ 	int err;
++	int t;
+ 
+ 	if (vlan_id >= VLAN_VID_MASK)
+ 		return -ERANGE;
+@@ -242,6 +243,19 @@
+ 	 * hope the underlying device can handle it.
+ 	 */
+ 	new_dev->mtu = real_dev->mtu;
++
++	/*
++	 * setup dev addr based on vid and real dev addr
++	 */
++	t = (((u32) real_dev->dev_addr[3]) << 16) + (((u32) real_dev->dev_addr[4]) << 8) + ((u32) real_dev->dev_addr[5]);
++	t += (vlan_id - 1);
++
++	new_dev->dev_addr[0] = real_dev->dev_addr[0];
++	new_dev->dev_addr[1] = real_dev->dev_addr[1];
++	new_dev->dev_addr[2] = real_dev->dev_addr[2];
++	new_dev->dev_addr[3] = (t >> 16) & 0xff;
++	new_dev->dev_addr[4] = (t >> 8) & 0xff;
++	new_dev->dev_addr[5] = t & 0xff;
+ 
+ 	vlan_dev_priv(new_dev)->vlan_id = vlan_id;
+ 	vlan_dev_priv(new_dev)->real_dev = real_dev;

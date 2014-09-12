@@ -1,0 +1,7 @@
+/var/log/ppp.log {
+	size 25k
+	compress
+	copytruncate
+	rotate 4
+	missingok
+}

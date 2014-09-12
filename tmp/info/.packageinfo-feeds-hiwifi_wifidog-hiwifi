@@ -1,0 +1,19 @@
+Source-Makefile: package/feeds-hiwifi/wifidog-hiwifi/Makefile
+Package: wifidog-hiwifi
+Submenu: Captive Portals
+Version: r1464-20140528
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +iptables-mod-extra +iptables-mod-ipopt +kmod-ipt-nat +iptables-mod-nat-extra +libpthread
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: A wireless captive portal solution
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: wifidog-hiwifi-r1464.tar.gz
+Type: ipkg
+Description: A wireless captive portal solution
+http://www.wifidog.org
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

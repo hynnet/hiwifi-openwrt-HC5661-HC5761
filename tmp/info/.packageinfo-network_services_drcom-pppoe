@@ -1,0 +1,18 @@
+Source-Makefile: package/network/services/drcom-pppoe/Makefile
+Package: drcom-pppoe
+Submenu: CERNET
+Version: 1-1
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +netifd
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: free Dr.COM client for embedded devices
+Maintainer: Duke Wu <duke.wu@hiwifi.tw>
+Source: 
+Type: ipkg
+Description:  free Dr.COM client which support Dr.COM private authentication protocol v5.2.0(P)
+Duke Wu <duke.wu@hiwifi.tw>
+@@
+
+

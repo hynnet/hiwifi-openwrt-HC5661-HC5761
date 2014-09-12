@@ -1,0 +1,23 @@
+--- openvpn-2.3.1.ori/src/openvpn/init.c	2013-03-20 16:28:14.000000000 +0800
++++ init.c	2013-05-03 21:41:16.218168753 +0800
+@@ -1324,11 +1324,20 @@
+ 
+   if (options->route_script)
+     {
++   // fork to make route-up script can use the fresh vpn channel
++   // 2013-1-28, LIKAI<kai.li@hiwifi.tw>
++   if (fork()) {
++     if (fork()) {
++       exit(0);
++     } else {
+       struct argv argv = argv_new ();
+       setenv_str (es, "script_type", "route-up");
+       argv_printf (&argv, "%sc", options->route_script);
+       openvpn_run_script (&argv, es, 0, "--route-up");
+       argv_reset (&argv);
++     exit(0);
++     }
++   }
+     }
+ 
+ #ifdef WIN32

@@ -1,0 +1,18 @@
+diff -ruN a/src/Makefile b/src/Makefile
+--- a/src/Makefile	2014-03-02 21:42:28.567842830 +0800
++++ b/src/Makefile	2014-03-03 00:24:24.712282117 +0800
+@@ -1,5 +1,5 @@
+ 
+-CC=cc
++CC=mips-openwrt-linux-uclibc-gcc
+ BINDING_TOOL=gupnp-binding-tool
+ BINDING_TOOL_FLAGS=-m server
+ 
+@@ -42,5 +42,6 @@
+ 	rm -rf UPNPAudioPlayer.tgz
+ 
+ install: all
+-	sh ./build_scripts/make_install_package.sh
++	mkdir -p ../ipkg-install/usr/bin
++	cp audio_player ../ipkg-install/usr/bin/upnpaudioplayer
+ 

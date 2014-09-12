@@ -1,0 +1,15 @@
+#!/bin/sh /etc/rc.common
+#
+# Copyright (C) 2012-2013 hiwifi.com
+#
+
+START=99
+
+start() {
+
+	if [ -e /etc/config/led_disable ]; then
+		echo 0 > /proc/hiwifi/eth_led
+		setled off green system
+		setled off green internet
+	fi	
+}

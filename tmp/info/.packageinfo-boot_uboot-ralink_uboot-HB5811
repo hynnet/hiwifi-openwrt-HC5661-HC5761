@@ -1,0 +1,19 @@
+Source-Makefile: package/boot/uboot-ralink/uboot-HB5811/Makefile
+Package: uboot-ralink-HB5811
+Default: y if (TARGET_ralink_mt7620_HB5811)
+Version: 1.1.3-20140604
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread @TARGET_ralink_mt7620_HB5811
+Menu-Depends: 
+Provides: 
+Build-Variant: HB5811
+Section: boot
+Category: Boot Loaders
+Title: U-boot for HB5811 mt7620a board
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: bin
+Description: U-boot for HB5811 mt7620a board
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

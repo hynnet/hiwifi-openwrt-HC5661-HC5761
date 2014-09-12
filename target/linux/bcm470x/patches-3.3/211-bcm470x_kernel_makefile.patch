@@ -1,0 +1,33 @@
+--- a/Makefile
++++ b/Makefile
+@@ -558,10 +558,30 @@
+ # Defaults to vmlinux, but the arch makefile usually adds further targets
+ all: vmlinux
+ 
++# Broadcom features compile options
++ifneq ($(CONFIG_BCM_CTF),)
++KBUILD_CFLAGS += -DHDNCTF -DCTFPOOL -DCTFMAP -DPKTC -DCTF_PPPOE
++ifneq ($(CONFIG_WL_USBAP),)
++KBUILD_CFLAGS += -DCTFPOLL_SPINLOCK
++endif
++ifneq ($(CONFIG_IPV6),)
++KBUILD_CFLAGS += -DCTF_IPV6
++endif
++endif
++
++ifneq ($(CONFIG_PROXYARP),)
++KBUILD_CFLAGS += -DPROXYARP
++endif
++
+ ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+ KBUILD_CFLAGS	+= -Os -fno-caller-saves
+ else
+ KBUILD_CFLAGS	+= -O2 -fno-reorder-blocks -fno-tree-ch -fno-caller-saves
++endif
++
++ifdef CONFIG_BCM47XX
++KBUILD_CFLAGS += -I$(srctree)/brcm/include -DBCMDRIVER -Dlinux
++KBUILD_AFLAGS += -I$(srctree)/brcm/include -DBCMDRIVER -Dlinux
+ endif
+ 
+ include $(srctree)/arch/$(SRCARCH)/Makefile

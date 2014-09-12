@@ -1,0 +1,120 @@
+#
+# Copyright (C) 2013-2014 www.hiwifi.com
+#
+
+preinit_config_vlan() {
+
+	. /lib/ralink.sh
+
+	case $(tw_board_name) in
+	HB5981m)
+		configEsw WLLLX
+		;;
+	HB5981s)
+		configEsw XLLLL
+		;;
+	BL-H750AC)
+		configEsw LLLLW
+		;;
+	*)
+		configEsw WLLLL
+		;;
+	esac
+
+}
+
+configEsw()
+{
+	local cpu_name
+	cpu_name=$(awk 'BEGIN{FS="[ \t]+:[ \t]"} /system type/ {print $2}' /proc/cpuinfo)
+	
+	case "$cpu_name" in
+	*"Ralink MT7620"*)
+		config_mt7620_esw $1
+		;;
+	*)
+		config_mt7620_esw $1
+		;;
+	esac
+}
+
+config_mt7620_esw()
+{
+	#LAN/WAN ports as security mode, egress mode = untagged
+	switch reg w 2004 ff0003 #port0
+	switch reg w 2104 ff0003 #port1
+	switch reg w 2204 ff0003 #port2
+	switch reg w 2304 ff0003 #port3
+	switch reg w 2404 ff0003 #port4
+	switch reg w 2504 ff0003 #port5
+	#LAN/WAN ports as transparent port
+	switch reg w 2010 810000c0 #port0
+	switch reg w 2110 810000c0 #port1
+	switch reg w 2210 810000c0 #port2
+	switch reg w 2310 810000c0 #port3	
+	switch reg w 2410 810000c0 #port4
+	switch reg w 2510 810000c0 #port5
+	#set CPU/P7 port as user port
+	switch reg w 2610 81000000 #port6
+	switch reg w 2710 81000000 #port7
+
+	switch reg w 2604 20ff0003 #port6, Egress VLAN Tag Attribution=tagged
+	switch reg w 2704 20ff0003 #port7, Egress VLAN Tag Attribution=tagged
+	switch reg w 2610 81000000 #port6
+
+	if [ "$1" = "LLLLW" ]; then
+		#set PVID
+		switch reg w 2014 10001 #port0
+		switch reg w 2114 10001 #port1
+		switch reg w 2214 10001 #port2
+		switch reg w 2314 10001 #port3
+		switch reg w 2414 10002 #port4
+		switch reg w 2514 10001 #port5
+		#VLAN member port
+		switch vlan set 0 1 11110111
+		switch vlan set 1 2 00001011
+		echo "4" > /proc/hiwifi/wan_phy_num
+	elif [ "$1" = "WLLLL" ]; then
+		#set PVID
+		switch reg w 2014 10002 #port0
+		switch reg w 2114 10001 #port1
+		switch reg w 2214 10001 #port2
+		switch reg w 2314 10001 #port3
+		switch reg w 2414 10001 #port4
+		switch reg w 2514 10001 #port5
+		#VLAN member port
+		switch vlan set 0 1 01111111
+		switch vlan set 1 2 10000011
+		echo "0" >/proc/hiwifi/wan_phy_num
+	elif [ "$1" = "WLLLX" ]; then
+		# set PVID
+		switch reg w 2014 10002 #port0
+		switch reg w 2114 10001 #port1
+		switch reg w 2214 10001 #port2(data port)
+		switch reg w 2314 10001 #port3
+		switch reg w 2414 10003 #port4(icpuc port)
+		switch reg w 2514 10001 #port5
+		# VLAN member port
+		switch vlan set 0 1 01110111
+		switch vlan set 1 2 10000011
+		switch vlan set 2 3 00001011
+		echo "0" >/proc/hiwifi/wan_phy_num
+	elif [ "$1" = "XLLLL" ]; then
+		# set PVID
+		switch reg w 2014 10003 #port0(icpuc port)
+		switch reg w 2114 10001 #port1(data port)
+		switch reg w 2214 10001 #port2
+		switch reg w 2314 10001 #port3
+		switch reg w 2414 10001 #port4
+		switch reg w 2514 10001 #port5
+		# VLAN member port
+		switch vlan set 0 1 01111111
+		switch vlan set 1 2 00000011
+		switch vlan set 2 3 10000011
+	fi
+
+	#clear mac table if vlan configuration changed
+	switch clear
+}
+
+boot_hook_add preinit_main preinit_config_vlan

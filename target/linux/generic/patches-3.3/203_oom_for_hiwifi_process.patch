@@ -1,0 +1,46 @@
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -34,6 +34,8 @@
+ #include <linux/ptrace.h>
+ #include <linux/freezer.h>
+ #include <linux/ftrace.h>
++#include <linux/taskstats.h>
++#include <linux/string.h>
+ 
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/oom.h>
+@@ -42,6 +44,12 @@
+ int sysctl_oom_kill_allocating_task;
+ int sysctl_oom_dump_tasks = 1;
+ static DEFINE_SPINLOCK(zone_scan_lock);
++
++#define HIWIFI_OOM_UNKILL_TASK_MAX		10
++static char* unkill_task[HIWIFI_OOM_UNKILL_TASK_MAX] = {
++	"sysupgrade", "/bin/busybox ash -c", "mtd", "netifd", "ubusd", "udhcpc", "pppd", "dnsmasq",
++	"hotplug2", "hcshd"
++};
+ 
+ /*
+  * compare_swap_oom_score_adj() - compare and swap current's oom_score_adj
+@@ -154,6 +162,8 @@
+ static bool oom_unkillable_task(struct task_struct *p,
+ 		const struct mem_cgroup *memcg, const nodemask_t *nodemask)
+ {
++	unsigned int i;
++
+ 	if (is_global_init(p))
+ 		return true;
+ 	if (p->flags & PF_KTHREAD)
+@@ -166,6 +176,11 @@
+ 	/* p may not have freeable memory in nodemask */
+ 	if (!has_intersects_mems_allowed(p, nodemask))
+ 		return true;
++
++	for (i = 0; i < HIWIFI_OOM_UNKILL_TASK_MAX; i++) {
++		if (strnstr(p->comm, unkill_task[i], sizeof(p->comm)) != NULL)
++			return true;
++	}	
+ 
+ 	return false;
+ }
+ 

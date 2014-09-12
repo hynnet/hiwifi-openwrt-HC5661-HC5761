@@ -1,0 +1,2 @@
+#!bin/sh
+kill -USR2 $(pidof pppd-manage.sh)

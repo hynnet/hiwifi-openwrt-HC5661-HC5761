@@ -1,0 +1,19 @@
+Source-Makefile: package/package-hiwifi/plugin/Makefile
+Package: plugin
+Version: 0.1-20140605
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +nixio +libhiwifi-lua +libtw-lua +liblua
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: net
+Category: Turbo Wireless
+Title: Plugin Management Tool
+Maintainer: Hong Shen <hong.shen@hiwifi.tw>
+Source: 
+Type: ipkg
+Description: Plugin Management Tool
+http://trac.hiwifi.tw/trac
+Hong Shen <hong.shen@hiwifi.tw>
+@@
+
+

@@ -1,0 +1,19 @@
+Source-Makefile: package/package-hiwifi/mcdownloader/Makefile
+Package: mcdownloader
+Submenu: Accelerator/Downloader
+Version: 0.0.65-20140304
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpthread +libstdcpp
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Turbo Wireless
+Title: mcdownloader
+Maintainer: Qin Yifang <yifang.qin@hiwifi.tw>
+Source: mcdownloader-0.0.65.tar.gz
+Type: ipkg
+Description: 	mcdownloader is a multiple connection downloader, developed by Qin Yifang <yifang.qin@hiwifi.tw>
+http://www.turboer.com/
+Qin Yifang <yifang.qin@hiwifi.tw>
+@@
+
+

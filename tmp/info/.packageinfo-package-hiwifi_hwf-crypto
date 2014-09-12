@@ -1,0 +1,19 @@
+Source-Makefile: package/package-hiwifi/hwf-crypto/Makefile
+Package: hwf-crypto
+Submenu: Utilites
+Version: 0.0.1-20140610
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libopenssl +libtw
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Turbo Wireless
+Title: hwf-crypto
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: 	hwf-crypto is a rc4 crypto tool.
+	getrouterid_sohtv is a secrety.
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

@@ -1,0 +1,25 @@
+Index: linux-3.1.10/drivers/net/Kconfig
+===================================================================
+--- linux-3.1.10/drivers/net/Kconfig	(版本 14)
++++ linux-3.1.10/drivers/net/Kconfig	(版本 15)
+@@ -2563,6 +2563,8 @@
+ 	  from Faraday. It is used on Faraday A369, Andes AG102 and some
+ 	  other ARM/NDS32 SoC's.
+ 
++source "drivers/net/gmac/Kconfig"
++
+ endif # NETDEV_1000
+ 
+ #
+Index: linux-3.1.10/drivers/net/Makefile
+===================================================================
+--- linux-3.1.10/drivers/net/Makefile	(版本 14)
++++ linux-3.1.10/drivers/net/Makefile	(版本 15)
+@@ -12,6 +12,7 @@
+ 
+ obj-$(CONFIG_E1000) += e1000/
+ obj-$(CONFIG_E1000E) += e1000e/
++obj-$(CONFIG_SYNOPSYS_GMAC) += gmac/
+ obj-$(CONFIG_IBM_NEW_EMAC) += ibm_newemac/
+ obj-$(CONFIG_IGB) += igb/
+ obj-$(CONFIG_IGBVF) += igbvf/

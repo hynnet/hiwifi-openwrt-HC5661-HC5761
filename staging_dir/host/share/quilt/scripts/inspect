@@ -1,0 +1,262 @@
+#! /bin/bash
+
+#  This script is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2 as
+#  published by the Free Software Foundation.
+#
+#  See the COPYING and AUTHORS files for more details.
+
+if test -n "$STAGING_DIR"; then
+	: ${QUILT_DIR="$STAGING_DIR/../host/share/quilt"}
+else
+	: ${QUILT_DIR=/home/hiwifi/hc5761/staging_dir/host/share/quilt}
+fi
+
+if ! [ -r $QUILT_DIR/scripts/patchfns ]
+then
+	echo "Cannot read library $QUILT_DIR/scripts/patchfns" >&2
+	exit 1
+fi
+. $QUILT_DIR/scripts/patchfns
+cd ${SUBDIR:-.}
+
+usage() {
+	echo "Usage: ${0##*/} specfile"
+	exit 1
+}
+
+options=$(getopt -o v --long sourcedir: -n "${0##*/}" -- "$@") || exit
+
+eval set -- "$options"
+
+sourcedir=
+
+while true
+do
+	case "$1" in
+	-v)
+		verbose=1
+		shift ;;
+	--sourcedir)
+		sourcedir=${2%/}/
+		shift 2 ;;
+	--)
+		shift
+		break ;;
+	esac
+done
+
+[ "${sourcedir:0:1}" = / ] || sourcedir=$PWD/$sourcedir
+
+specfile=$1
+if [ $# -ne 1 -o ! -f "$specfile" ]
+then
+	usage
+fi
+if [ "${specfile:0:1}"  = / ]
+then
+	specdir=$(dirname "$specfile")
+	specfile=${specfile##*/}
+else
+	specdir=$PWD
+fi
+
+tmpdir="$(gen_tempfile -d ${TMPDIR-/var/tmp}/${0##*/})"
+mkdir -p $tmpdir || exit 1
+trap "rm -rf $tmpdir" EXIT
+mkdir -p $tmpdir/build
+mkdir -p $tmpdir/bin
+
+# Redirect file descriptors
+if [ -n "$verbose" ]
+then
+	exec 3>&1 4>/dev/null
+else
+	exec 3>&1 4>&2 2>/dev/null
+fi
+
+# create md5 sums, also for uncompressed files
+echo -n "### md5sum: " >&4
+shopt -s nullglob
+for file in $sourcedir/*
+do
+	basename=${file##*/}
+	case "$basename" in
+		ready|bigpack|MD5SUMS|MD5SUMS.meta|*.spec|*.changes)
+			continue
+			;;
+	esac
+	[ -f "$file" ] || continue
+	echo -n "." >&4
+	echo "md5sum < $file" >&2
+	set -- $(md5sum < "$file")
+	echo "$1 $basename"
+	case "$(file -b "$file")" in
+		compress*|gzip*)
+			echo -n "g" >&4
+			echo "gzip -cd $file | md5sum" >&2
+			set -- $(gzip -cd "$file" | md5sum)
+			echo "$1 $basename"
+			;;
+		bzip2*)
+			echo -n "b" >&4
+			echo "bzip2 -cd $file | md5sum" >&2
+			set -- $(bzip2 -cd "$file" | md5sum)
+			echo "$1 $basename"
+			;;
+	esac
+done > $tmpdir/md5sums
+echo >&4
+shopt -u nullglob
+
+# wrapper script for patch and tar
+cat <<-'EOF' > $tmpdir/bin/wrapper
+	#! /bin/bash
+
+	# find original data file by md5sum
+	original_file() {
+		local file=$1 md5sum
+
+		set -- $(md5sum < $file)
+		md5sum=$1
+		while read md5sum_ file_
+		do
+			if [ $md5sum = $md5sum_ ]
+			then
+				echo ${file_#\*}
+				return 0
+			fi
+		done < $tmpdir/md5sums
+
+		# Try harder
+		if ! [ -e $tmpdir/more-md5sums ]
+		then
+			( cd $RPM_BUILD_DIR
+			find . -type f \
+			| sed -e 's:^.\/::' \
+			| xargs md5sum \
+			) > $tmpdir/more-md5sums
+		fi
+		
+		while read md5sum_ file_
+		do
+			if [ $md5sum = $md5sum_ ]
+			then
+				echo ${file_#\*}
+				return 0
+			fi
+		done < $tmpdir/more-md5sums
+
+		return 1
+	}
+
+	# Extract the -p option from the command line
+	strip_option() {
+		while [ $# -ne 0 -a "${1:0:2}" != -p ]
+		do
+			shift
+		done
+		if [ "${1:0:2}" = -p ]
+		then
+			[ "$1" = -p ] && set -- "$1$2"
+			[ "$1" != -p1 ] && echo $1
+		fi
+	}
+
+	patch_input_file() {
+		while [ $# -gt 0 ]; do
+			case "$1" in
+			-i|--input)
+				if [ $# -ge 2 ]; then
+					echo "$2"
+					return
+				fi
+				;;
+			-i*)
+				echo "${1#-i}"
+				return
+				;;
+			--input=*)
+				echo "${1#--input=}"
+				return
+				;;
+			esac
+			shift
+		done
+		return 1
+	}
+
+	tar_input_file() {
+		while [ $# -gt 0 ]; do
+			if [ -e "$1" ]
+			then
+				echo "$1"
+				return
+			fi
+			shift
+		done
+	}
+
+	tmpdir=${RPM_BUILD_DIR%/*}
+	rm -f $tmpdir/data
+	case "${0##*/}" in
+	patch)
+		inputfile=$(patch_input_file "$@")
+		;;
+	tar)
+		inputfile=$(tar_input_file "$@")
+		;;
+	esac
+	if [ -z "$inputfile" ]; then
+	    # put data from stdin into tmpfile
+	    cat > $tmpdir/data
+	fi
+
+	unpackfile="$(original_file ${inputfile:-$tmpdir/data})"
+	if [ -n "$unpackfile" ]
+	then
+		dir=${PWD/$RPM_BUILD_DIR}
+		dir=${dir##/}
+
+		case "${0##*/}" in
+		patch)
+			echo -n p >&4
+			echo "${0##*/} ${dir:-.} $unpackfile" \
+			     $(strip_option "$@") >&3
+			;;
+		tar)
+			echo -n t >&4
+			echo "${0##*/} ${dir:-.} $unpackfile" >&3
+			;;
+		esac
+	fi
+
+	PATH=${PATH#*:}
+	if [ -n "$inputfile" ]; then
+	    ${0##*/} "$@"
+	else
+	    ${0##*/} "$@" < $tmpdir/data
+	fi
+EOF
+chmod 755 $tmpdir/bin/wrapper
+ln -s wrapper $tmpdir/bin/patch
+ln -s wrapper $tmpdir/bin/tar
+
+# let rpm do all the dirty specfile stuff ...
+echo -n "### rpmbuild: " >&4
+
+export PATH="$tmpdir/bin:$PATH"
+rpmbuild --eval "%define _sourcedir $sourcedir" \
+	 --eval "%define _specdir   $specdir" \
+	 --eval "%define _builddir  $tmpdir/build" \
+	 --eval "%define __patch    $tmpdir/bin/patch" \
+	 --eval "%define __tar      $tmpdir/bin/tar" \
+	 --nodeps \
+	 -bp "$specdir/$specfile" < /dev/null >&2
+status=$?
+echo >&4
+exit $status
+### Local Variables:
+### mode: shell-script
+### End:
+# vim:filetype=sh

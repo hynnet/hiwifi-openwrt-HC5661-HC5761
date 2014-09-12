@@ -1,0 +1,1104 @@
+--- a/arch/arm/kernel/entry-armv.S	2012-06-01 15:16:13.000000000 +0800
++++ b/arch/arm/kernel/entry-armv.S	2013-06-02 15:54:48.345818624 +0800
+@@ -80,6 +80,9 @@
+ 	.section	.kprobes.text,"ax",%progbits
+ #else
+ 	.text
++#ifdef CONFIG_BCM47XX
++	.section .text.fastpath, "a"
++#endif
+ #endif
+ 
+ /*
+--- a/arch/arm/kernel/irq.c	2012-06-01 15:16:13.000000000 +0800
++++ b/arch/arm/kernel/irq.c	2013-06-02 15:58:07.093818701 +0800
+@@ -41,6 +41,14 @@
+ #include <asm/mach/irq.h>
+ #include <asm/mach/time.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /*
+  * No architecture-specific irq_finish function defined in arm/arch/irqs.h.
+  */
+@@ -96,7 +104,11 @@
+ /*
+  * asm_do_IRQ is the interface to be used from assembly code.
+  */
++#ifdef CONFIG_BCM47XX
++asmlinkage void BCMFASTPATH
++#else
+ asmlinkage void __exception_irq_entry
++#endif
+ asm_do_IRQ(unsigned int irq, struct pt_regs *regs)
+ {
+ 	handle_IRQ(irq, regs);
+--- a/arch/arm/kernel/smp.c	2012-06-01 15:16:13.000000000 +0800
++++ b/arch/arm/kernel/smp.c	2013-06-02 15:30:13.589818705 +0800
+@@ -43,6 +43,10 @@
+ #include <asm/localtimer.h>
+ #include <asm/smp_plat.h>
+ 
++#ifdef CONFIG_BCM47XX
++extern void soc_watchdog(void);
++#endif
++
+ /*
+  * as from 2.5, kernels no longer have an init_tasks structure
+  * so we need some other way of telling a new secondary core
+@@ -429,7 +433,14 @@
+ static void ipi_timer(void)
+ {
+ 	struct clock_event_device *evt = &__get_cpu_var(percpu_clockevent);
++#ifdef CONFIG_BCM47XX
++	int cpu = smp_processor_id();
++#endif
+ 	evt->event_handler(evt);
++#ifdef CONFIG_BCM47XX
++	if (cpu == 0)
++		soc_watchdog();
++#endif
+ }
+ 
+ #ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
+--- a/arch/arm/kernel/vmlinux.lds.S	2012-06-01 15:16:13.000000000 +0800
++++ b/arch/arm/kernel/vmlinux.lds.S	2013-06-02 16:00:59.929818705 +0800
+@@ -112,6 +112,13 @@
+ 			ARM_CPU_KEEP(PROC_INFO)
+ 	}
+ 
++#ifdef CONFIG_BCM47XX
++	. = ALIGN(32);
++	__fastpath_begin = .;
++	.text.fastpath : { *(.text.fastpath) }
++	__fastpath_end = .;
++#endif
++
+ 	RO_DATA(PAGE_SIZE)
+ 
+ #ifdef CONFIG_ARM_UNWIND
+--- a/arch/arm/lib/memcpy.S	2012-06-01 15:16:13.000000000 +0800
++++ b/arch/arm/lib/memcpy.S	2013-06-02 15:52:08.961818872 +0800
+@@ -54,6 +54,10 @@
+ 
+ 	.text
+ 
++#ifdef CONFIG_BCM47XX
++	.section .text.fastpath, "a"
++#endif
++
+ /* Prototype: void *memcpy(void *dest, const void *src, size_t n); */
+ 
+ ENTRY(memcpy)
+--- a/arch/arm/lib/memset.S	2012-06-01 15:16:13.000000000 +0800
++++ b/arch/arm/lib/memset.S	2013-06-02 15:53:08.645818713 +0800
+@@ -13,6 +13,9 @@
+ #include <asm/assembler.h>
+ 
+ 	.text
++#ifdef CONFIG_BCM47XX
++	.section .text.fastpath, "a"
++#endif
+ 	.align	5
+ 	.word	0
+ 
+--- a/arch/arm/mm/cache-v7.S	2012-06-01 15:16:13.000000000 +0800
++++ b/arch/arm/mm/cache-v7.S	2013-06-02 15:50:09.097818705 +0800
+@@ -17,6 +17,10 @@
+ 
+ #include "proc-macros.S"
+ 
++#ifdef CONFIG_BCM47XX
++	.section .text.fastpath, "a"
++#endif
++
+ /*
+  *	v7_flush_icache_all()
+  *
+--- a/fs/mpage.c	2012-06-01 15:16:13.000000000 +0800
++++ b/fs/mpage.c	2013-06-02 17:23:12.820000197 +0800
+@@ -29,6 +29,14 @@
+ #include <linux/pagevec.h>
+ #include <linux/cleancache.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /*
+  * I/O completion handler for multipage BIOs.
+  *
+@@ -151,7 +159,7 @@
+  * represent the validity of its disk mapping and to decide when to do the next
+  * get_block() call.
+  */
+-static struct bio *
++static struct bio * BCMFASTPATH_HOST 
+ do_mpage_readpage(struct bio *bio, struct page *page, unsigned nr_pages,
+ 		sector_t *last_block_in_bio, struct buffer_head *map_bh,
+ 		unsigned long *first_logical_block, get_block_t get_block)
+--- a/fs/select.c	2012-06-01 15:16:13.000000000 +0800
++++ b/fs/select.c	2013-06-02 17:20:40.768000209 +0800
+@@ -29,6 +29,13 @@
+ 
+ #include <asm/uaccess.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
+ 
+ /*
+  * Estimate expected accuracy in ns from a timeval.
+@@ -395,7 +402,7 @@
+ 	}
+ }
+ 
+-int do_select(int n, fd_set_bits *fds, struct timespec *end_time)
++int BCMFASTPATH_HOST do_select(int n, fd_set_bits *fds, struct timespec *end_time)
+ {
+ 	ktime_t expire, *to = NULL;
+ 	struct poll_wqueues table;
+--- a/fs/splice.c	2013-05-31 23:58:55.866354000 +0800
++++ b/fs/splice.c	2013-06-02 17:22:18.496000132 +0800
+@@ -32,6 +32,14 @@
+ #include <linux/gfp.h>
+ #include <linux/socket.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /*
+  * Attempt to steal a page from a pipe buffer. This should perhaps go into
+  * a vm helper function, it's already simplified quite a bit by the
+@@ -299,7 +307,7 @@
+ 	kfree(spd->partial);
+ }
+ 
+-static int
++static int BCMFASTPATH_HOST 
+ __generic_file_splice_read(struct file *in, loff_t *ppos,
+ 			   struct pipe_inode_info *pipe, size_t len,
+ 			   unsigned int flags)
+@@ -786,7 +794,7 @@
+  *    locking is required around copying the pipe buffers to the
+  *    destination.
+  */
+-int splice_from_pipe_feed(struct pipe_inode_info *pipe, struct splice_desc *sd,
++int BCMFASTPATH_HOST splice_from_pipe_feed(struct pipe_inode_info *pipe, struct splice_desc *sd,
+ 			  splice_actor *actor)
+ {
+ 	int ret;
+--- a/kernel/irq/chip.c	2012-06-01 15:16:13.000000000 +0800
++++ b/kernel/irq/chip.c	2013-06-02 17:07:58.680000137 +0800
+@@ -18,6 +18,14 @@
+ 
+ #include "internals.h"
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /**
+  *	irq_set_chip - set the irq chip for an irq
+  *	@irq:	irq number
+@@ -360,7 +368,7 @@
+  *	it after the associated handler has acknowledged the device, so the
+  *	interrupt line is back to inactive.
+  */
+-void
++void BCMFASTPATH 
+ handle_level_irq(unsigned int irq, struct irq_desc *desc)
+ {
+ 	raw_spin_lock(&desc->lock);
+--- a/kernel/irq/handle.c	2013-05-31 23:58:55.754354000 +0800
++++ b/kernel/irq/handle.c	2013-06-02 17:08:27.476000098 +0800
+@@ -20,6 +20,13 @@
+ 
+ #include "internals.h"
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#endif
++
+ /**
+  * handle_bad_irq - handle spurious and unhandled irqs
+  * @irq:       the interrupt number
+@@ -113,7 +120,7 @@
+ 	wake_up_process(action->thread);
+ }
+ 
+-irqreturn_t
++irqreturn_t BCMFASTPATH
+ handle_irq_event_percpu(struct irq_desc *desc, struct irqaction *action)
+ {
+ 	irqreturn_t retval = IRQ_NONE;
+@@ -163,7 +170,7 @@
+ 	return retval;
+ }
+ 
+-irqreturn_t handle_irq_event(struct irq_desc *desc)
++irqreturn_t BCMFASTPATH handle_irq_event(struct irq_desc *desc)
+ {
+ 	struct irqaction *action = desc->action;
+ 	irqreturn_t ret;
+--- a/kernel/softirq.c	2012-06-01 15:16:13.000000000 +0800
++++ b/kernel/softirq.c	2013-06-02 17:06:44.760000050 +0800
+@@ -29,6 +29,14 @@
+ #include <trace/events/irq.h>
+ 
+ #include <asm/irq.h>
++
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#endif
++
+ /*
+    - No shared variables, all the data are CPU local.
+    - If a softirq needs serialization, let it serialize itself
+@@ -124,7 +132,7 @@
+ }
+ #endif /* CONFIG_TRACE_IRQFLAGS */
+ 
+-void local_bh_disable(void)
++void BCMFASTPATH local_bh_disable(void)
+ {
+ 	__local_bh_disable((unsigned long)__builtin_return_address(0),
+ 				SOFTIRQ_DISABLE_OFFSET);
+@@ -181,7 +189,7 @@
+ 	preempt_check_resched();
+ }
+ 
+-void local_bh_enable(void)
++void BCMFASTPATH local_bh_enable(void)
+ {
+ 	_local_bh_enable_ip((unsigned long)__builtin_return_address(0));
+ }
+--- a/lib/string.c	2012-06-01 15:16:13.000000000 +0800
++++ b/lib/string.c	2013-06-02 17:25:05.496000044 +0800
+@@ -24,6 +24,14 @@
+ #include <linux/ctype.h>
+ #include <linux/module.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ #ifndef __HAVE_ARCH_STRNICMP
+ /**
+  * strnicmp - Case insensitive, length-limited string comparison
+@@ -645,7 +653,7 @@
+  * @count: The size of the area.
+  */
+ #undef memcmp
+-int memcmp(const void *cs, const void *ct, size_t count)
++int BCMFASTPATH memcmp(const void *cs, const void *ct, size_t count)
+ {
+ 	const unsigned char *su1, *su2;
+ 	int res = 0;
+--- a/mm/filemap.c	2012-06-01 15:16:13.000000000 +0800
++++ b/mm/filemap.c	2013-06-02 17:10:37.184000096 +0800
+@@ -36,6 +36,14 @@
+ #include <linux/cleancache.h>
+ #include "internal.h"
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /*
+  * FIXME: remove all knowledge of the buffer layer from the core VM
+  */
+@@ -584,7 +592,7 @@
+  * The mb is necessary to enforce ordering between the clear_bit and the read
+  * of the waitqueue (to avoid SMP races with a parallel wait_on_page_locked()).
+  */
+-void unlock_page(struct page *page)
++void BCMFASTPATH_HOST unlock_page(struct page *page)
+ {
+ 	VM_BUG_ON(!PageLocked(page));
+ 	clear_bit_unlock(PG_locked, &page->flags);
+@@ -882,7 +890,7 @@
+  *
+  * find_get_pages_contig() returns the number of pages which were found.
+  */
+-unsigned find_get_pages_contig(struct address_space *mapping, pgoff_t index,
++unsigned BCMFASTPATH_HOST find_get_pages_contig(struct address_space *mapping, pgoff_t index,
+ 			       unsigned int nr_pages, struct page **pages)
+ {
+ 	unsigned int i;
+--- a/mm/page_alloc.c	2012-06-01 15:16:13.000000000 +0800
++++ b/mm/page_alloc.c	2013-06-02 17:11:30.584000128 +0800
+@@ -63,6 +63,14 @@
+ #include <asm/div64.h>
+ #include "internal.h"
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ #ifdef CONFIG_USE_PERCPU_NUMA_NODE_ID
+ DEFINE_PER_CPU(int, numa_node);
+ EXPORT_PER_CPU_SYMBOL(numa_node);
+@@ -1699,7 +1707,7 @@
+  * get_page_from_freelist goes through the zonelist trying to allocate
+  * a page.
+  */
+-static struct page *
++static struct page * BCMFASTPATH_HOST 
+ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+ 		struct zonelist *zonelist, int high_zoneidx, int alloc_flags,
+ 		struct zone *preferred_zone, int migratetype)
+--- a/mm/slub.c	2012-06-01 15:16:13.000000000 +0800
++++ b/mm/slub.c	2013-06-02 17:15:30.856000146 +0800
+@@ -32,6 +32,14 @@
+ 
+ #include <trace/events/kmem.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /*
+  * Lock order:
+  *   1. slub_lock (Global Semaphore)
+@@ -2175,7 +2183,7 @@
+  * we need to allocate a new slab. This is the slowest path since it involves
+  * a call to the page allocator and the setup of a new slab.
+  */
+-static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
++static void * BCMFASTPATH_HOST __slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
+ 			  unsigned long addr, struct kmem_cache_cpu *c)
+ {
+ 	void **object;
+@@ -2340,7 +2348,7 @@
+ 	return object;
+ }
+ 
+-void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
++void * BCMFASTPATH_HOST kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+ {
+ 	void *ret = slab_alloc(s, gfpflags, NUMA_NO_NODE, _RET_IP_);
+ 
+@@ -2403,7 +2411,7 @@
+  * lock and free the item. If there is no additional partial page
+  * handling required then we can return immediately.
+  */
+-static void __slab_free(struct kmem_cache *s, struct page *page,
++static void BCMFASTPATH_HOST __slab_free(struct kmem_cache *s, struct page *page,
+ 			void *x, unsigned long addr)
+ {
+ 	void *prior;
+@@ -2565,7 +2573,7 @@
+ 
+ }
+ 
+-void kmem_cache_free(struct kmem_cache *s, void *x)
++void BCMFASTPATH_HOST kmem_cache_free(struct kmem_cache *s, void *x)
+ {
+ 	struct page *page;
+ 
+@@ -3427,7 +3435,7 @@
+ EXPORT_SYMBOL(verify_mem_not_deleted);
+ #endif
+ 
+-void kfree(const void *x)
++void BCMFASTPATH_HOST kfree(const void *x)
+ {
+ 	struct page *page;
+ 	void *object = (void *)x;
+@@ -3990,7 +3998,7 @@
+ 
+ #endif
+ 
+-void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
++void * BCMFASTPATH_HOST __kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
+ {
+ 	struct kmem_cache *s;
+ 	void *ret;
+--- a/mm/swap.c	2012-06-01 15:16:13.000000000 +0800
++++ b/mm/swap.c	2013-06-02 17:16:53.664000145 +0800
+@@ -33,6 +33,14 @@
+ 
+ #include "internal.h"
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /* How many pages do we try to swap or page in/out together? */
+ int page_cluster;
+ 
+@@ -134,7 +142,7 @@
+ 	}
+ }
+ 
+-void put_page(struct page *page)
++void BCMFASTPATH_HOST put_page(struct page *page)
+ {
+ 	if (unlikely(PageCompound(page)))
+ 		put_compound_page(page);
+--- a/net/8021q/vlan_dev.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/8021q/vlan_dev.c	2013-06-02 17:03:14.540000152 +0800
+@@ -35,6 +35,14 @@
+ #include <linux/if_vlan.h>
+ #include <linux/netpoll.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /*
+  *	Rebuild the Ethernet MAC header. This is called after an ARP
+  *	(or in future other address resolution) has completed on this
+@@ -137,7 +145,7 @@
+ 	return rc;
+ }
+ 
+-static netdev_tx_t vlan_dev_hard_start_xmit(struct sk_buff *skb,
++static netdev_tx_t BCMFASTPATH_HOST vlan_dev_hard_start_xmit(struct sk_buff *skb,
+ 					    struct net_device *dev)
+ {
+ 	struct vlan_ethhdr *veth = (struct vlan_ethhdr *)(skb->data);
+--- a/net/bridge/br_device.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/bridge/br_device.c	2013-06-02 17:02:19.212000090 +0800
+@@ -22,8 +22,16 @@
+ #include <asm/uaccess.h>
+ #include "br_private.h"
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /* net device transmit always called with BH disabled */
+-netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
++netdev_tx_t BCMFASTPATH_HOST br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
+ {
+ 	struct net_bridge *br = netdev_priv(dev);
+ 	const unsigned char *dest = skb->data;
+--- a/net/bridge/br_fdb.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/bridge/br_fdb.c	2013-06-02 17:02:48.784000047 +0800
+@@ -25,6 +25,14 @@
+ #include <asm/unaligned.h>
+ #include "br_private.h"
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ static struct kmem_cache *br_fdb_cache __read_mostly;
+ static int fdb_insert(struct net_bridge *br, struct net_bridge_port *source,
+ 		      const unsigned char *addr);
+@@ -230,7 +238,7 @@
+ }
+ 
+ /* No locking or refcounting, assumes caller has rcu_read_lock */
+-struct net_bridge_fdb_entry *__br_fdb_get(struct net_bridge *br,
++struct net_bridge_fdb_entry * BCMFASTPATH_HOST __br_fdb_get(struct net_bridge *br,
+ 					  const unsigned char *addr)
+ {
+ 	struct hlist_node *h;
+@@ -411,7 +419,7 @@
+ 	return ret;
+ }
+ 
+-void br_fdb_update(struct net_bridge *br, struct net_bridge_port *source,
++void BCMFASTPATH_HOST br_fdb_update(struct net_bridge *br, struct net_bridge_port *source,
+ 		   const unsigned char *addr)
+ {
+ 	struct hlist_head *head = &br->hash[br_mac_hash(addr)];
+--- a/net/core/dev.c	2013-05-31 23:58:57.362354001 +0800
++++ b/net/core/dev.c	2013-06-02 16:23:11.769818705 +0800
+@@ -139,6 +139,15 @@
+ 
+ #include "net-sysfs.h"
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
++
+ /* Instead of increasing this, you should create a hash table. */
+ #define MAX_GRO_SKBS 8
+ 
+@@ -3398,7 +3407,7 @@
+ 	}
+ }
+ 
+-static int napi_gro_complete(struct sk_buff *skb)
++static int BCMFASTPATH_HOST napi_gro_complete(struct sk_buff *skb)
+ {
+ 	struct packet_type *ptype;
+ 	__be16 type = skb->protocol;
+@@ -3430,7 +3439,7 @@
+ 	return netif_receive_skb(skb);
+ }
+ 
+-inline void napi_gro_flush(struct napi_struct *napi)
++void BCMFASTPATH_HOST napi_gro_flush(struct napi_struct *napi)
+ {
+ 	struct sk_buff *skb, *next;
+ 
+@@ -3445,7 +3454,7 @@
+ }
+ EXPORT_SYMBOL(napi_gro_flush);
+ 
+-enum gro_result dev_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
++enum gro_result BCMFASTPATH_HOST dev_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
+ {
+ 	struct sk_buff **pp = NULL;
+ 	struct packet_type *ptype;
+@@ -3537,7 +3546,7 @@
+ }
+ EXPORT_SYMBOL(dev_gro_receive);
+ 
+-static inline gro_result_t
++static BCMFASTPATH_HOST gro_result_t
+ __napi_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
+ {
+ 	struct sk_buff *p;
+--- a/net/core/skbuff.c	2013-05-31 23:58:57.362354001 +0800
++++ b/net/core/skbuff.c	2013-06-02 16:26:09.509818711 +0800
+@@ -72,6 +72,13 @@
+ 
+ #include "kmap_skb.h"
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH_HOST
++#endif
++
+ static struct kmem_cache *skbuff_head_cache __read_mostly;
+ static struct kmem_cache *skbuff_fclone_cache __read_mostly;
+ 
+@@ -598,7 +605,7 @@
+ }
+ EXPORT_SYMBOL(skb_recycle_check);
+ 
+-static void __copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
++static void BCMFASTPATH_HOST __copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
+ {
+ 	new->tstamp		= old->tstamp;
+ 	new->dev		= old->dev;
+@@ -2850,7 +2857,7 @@
+ }
+ EXPORT_SYMBOL_GPL(skb_segment);
+ 
+-int skb_gro_receive(struct sk_buff **head, struct sk_buff *skb)
++int BCMFASTPATH_HOST skb_gro_receive(struct sk_buff **head, struct sk_buff *skb)
+ {
+ 	struct sk_buff *p = *head;
+ 	struct sk_buff *nskb;
+--- a/net/ipv4/af_inet.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/ipv4/af_inet.c	2013-06-02 16:48:35.856000005 +0800
+@@ -118,6 +118,14 @@
+ #include <linux/mroute.h>
+ #endif
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ 
+ /* The inetsw table contains everything that inet_create needs to
+  * build a new socket.
+@@ -1319,7 +1327,7 @@
+ 	return segs;
+ }
+ 
+-static struct sk_buff **inet_gro_receive(struct sk_buff **head,
++static struct sk_buff ** BCMFASTPATH_HOST inet_gro_receive(struct sk_buff **head,
+ 					 struct sk_buff *skb)
+ {
+ 	const struct net_protocol *ops;
+@@ -1397,7 +1405,7 @@
+ 	return pp;
+ }
+ 
+-static int inet_gro_complete(struct sk_buff *skb)
++static int BCMFASTPATH_HOST inet_gro_complete(struct sk_buff *skb)
+ {
+ 	const struct net_protocol *ops;
+ 	struct iphdr *iph = ip_hdr(skb);
+--- a/net/ipv4/inet_hashtables.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/ipv4/inet_hashtables.c	2013-06-02 16:50:49.080000259 +0800
+@@ -24,6 +24,14 @@
+ #include <net/secure_seq.h>
+ #include <net/ip.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /*
+  * Allocate and initialize a new local port bind bucket.
+  * The bindhash mutex for snum's hash chain must be held here.
+@@ -217,7 +225,7 @@
+ }
+ EXPORT_SYMBOL_GPL(__inet_lookup_listener);
+ 
+-struct sock * __inet_lookup_established(struct net *net,
++struct sock * BCMFASTPATH_HOST __inet_lookup_established(struct net *net,
+ 				  struct inet_hashinfo *hashinfo,
+ 				  const __be32 saddr, const __be16 sport,
+ 				  const __be32 daddr, const u16 hnum,
+--- a/net/ipv4/ip_input.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/ipv4/ip_input.c	2013-06-02 16:46:50.679999900 +0800
+@@ -145,6 +145,14 @@
+ #include <linux/mroute.h>
+ #include <linux/netlink.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /*
+  *	Process Router Attention IP option (RFC 2113)
+  */
+@@ -314,7 +322,7 @@
+ 	return -1;
+ }
+ 
+-static int ip_rcv_finish(struct sk_buff *skb)
++static int BCMFASTPATH_HOST ip_rcv_finish(struct sk_buff *skb)
+ {
+ 	const struct iphdr *iph = ip_hdr(skb);
+ 	struct rtable *rt;
+@@ -372,7 +380,7 @@
+ /*
+  * 	Main IP Receive routine.
+  */
+-int ip_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt, struct net_device *orig_dev)
++int BCMFASTPATH_HOST ip_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt, struct net_device *orig_dev)
+ {
+ 	const struct iphdr *iph;
+ 	u32 len;
+--- a/net/ipv4/ip_output.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/ipv4/ip_output.c	2013-06-02 16:45:20.429818705 +0800
+@@ -81,6 +81,14 @@
+ #include <linux/netlink.h>
+ #include <linux/tcp.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ int sysctl_ip_default_ttl __read_mostly = IPDEFTTL;
+ EXPORT_SYMBOL(sysctl_ip_default_ttl);
+ 
+@@ -333,7 +341,7 @@
+ 	       sizeof(fl4->saddr) + sizeof(fl4->daddr));
+ }
+ 
+-int ip_queue_xmit(struct sk_buff *skb, struct flowi *fl)
++int BCMFASTPATH_HOST ip_queue_xmit(struct sk_buff *skb, struct flowi *fl)
+ {
+ 	struct sock *sk = skb->sk;
+ 	struct inet_sock *inet = inet_sk(sk);
+--- a/net/ipv4/netfilter/ip_tables.c	2013-05-31 23:58:57.102354001 +0800
++++ b/net/ipv4/netfilter/ip_tables.c	2013-06-02 16:59:21.616000105 +0800
+@@ -30,6 +30,14 @@
+ #include <net/netfilter/nf_log.h>
+ #include "../../netfilter/xt_repldata.h"
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Netfilter Core Team <coreteam@netfilter.org>");
+ MODULE_DESCRIPTION("IPv4 packet filter");
+@@ -340,7 +348,7 @@
+ }
+ 
+ /* Returns one of the generic firewall policies, like NF_ACCEPT. */
+-unsigned int
++unsigned int BCMFASTPATH_HOST 
+ ipt_do_table(struct sk_buff *skb,
+ 	     unsigned int hook,
+ 	     const struct net_device *in,
+--- a/net/ipv4/tcp.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/ipv4/tcp.c	2013-06-02 16:38:35.029818705 +0800
+@@ -277,6 +277,15 @@
+ #include <asm/uaccess.h>
+ #include <asm/ioctls.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
++
+ int sysctl_tcp_fin_timeout __read_mostly = TCP_FIN_TIMEOUT;
+ 
+ struct percpu_counter tcp_orphan_count;
+@@ -2755,7 +2764,7 @@
+ }
+ EXPORT_SYMBOL(tcp_tso_segment);
+ 
+-struct sk_buff **tcp_gro_receive(struct sk_buff **head, struct sk_buff *skb)
++struct sk_buff ** BCMFASTPATH_HOST tcp_gro_receive(struct sk_buff **head, struct sk_buff *skb)
+ {
+ 	struct sk_buff **pp = NULL;
+ 	struct sk_buff *p;
+@@ -2851,7 +2860,7 @@
+ }
+ EXPORT_SYMBOL(tcp_gro_receive);
+ 
+-int tcp_gro_complete(struct sk_buff *skb)
++int BCMFASTPATH_HOST tcp_gro_complete(struct sk_buff *skb)
+ {
+ 	struct tcphdr *th = tcp_hdr(skb);
+ 
+--- a/net/ipv4/tcp_input.c	2013-05-31 23:58:55.806354001 +0800
++++ b/net/ipv4/tcp_input.c	2013-06-02 16:44:12.149818650 +0800
+@@ -73,6 +73,14 @@
+ #include <asm/unaligned.h>
+ #include <net/netdma.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ int sysctl_tcp_timestamps __read_mostly = 1;
+ int sysctl_tcp_window_scaling __read_mostly = 1;
+ int sysctl_tcp_sack __read_mostly = 1;
+@@ -3684,7 +3692,7 @@
+ }
+ 
+ /* This routine deals with incoming acks, but not outgoing ones. */
+-static int tcp_ack(struct sock *sk, const struct sk_buff *skb, int flag)
++static int BCMFASTPATH_HOST tcp_ack(struct sock *sk, const struct sk_buff *skb, int flag)
+ {
+ 	struct inet_connection_sock *icsk = inet_csk(sk);
+ 	struct tcp_sock *tp = tcp_sk(sk);
+@@ -5321,7 +5329,7 @@
+  *	the rest is checked inline. Fast processing is turned on in
+  *	tcp_data_queue when everything is OK.
+  */
+-int tcp_rcv_established(struct sock *sk, struct sk_buff *skb,
++int BCMFASTPATH_HOST tcp_rcv_established(struct sock *sk, struct sk_buff *skb,
+ 			const struct tcphdr *th, unsigned int len)
+ {
+ 	struct tcp_sock *tp = tcp_sk(sk);
+--- a/net/ipv4/tcp_ipv4.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/ipv4/tcp_ipv4.c	2013-06-02 16:50:01.540000018 +0800
+@@ -84,6 +84,14 @@
+ #include <linux/crypto.h>
+ #include <linux/scatterlist.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ int sysctl_tcp_tw_reuse __read_mostly;
+ int sysctl_tcp_low_latency __read_mostly;
+ EXPORT_SYMBOL(sysctl_tcp_low_latency);
+@@ -1658,7 +1666,7 @@
+  *	From tcp_input.c
+  */
+ 
+-int tcp_v4_rcv(struct sk_buff *skb)
++int BCMFASTPATH_HOST tcp_v4_rcv(struct sk_buff *skb)
+ {
+ 	const struct iphdr *iph;
+ 	const struct tcphdr *th;
+@@ -2595,7 +2603,7 @@
+ 	return tcp_gro_receive(head, skb);
+ }
+ 
+-int tcp4_gro_complete(struct sk_buff *skb)
++int BCMFASTPATH_HOST tcp4_gro_complete(struct sk_buff *skb)
+ {
+ 	const struct iphdr *iph = ip_hdr(skb);
+ 	struct tcphdr *th = tcp_hdr(skb);
+--- a/net/ipv4/tcp_output.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/ipv4/tcp_output.c	2013-06-02 16:42:39.929818702 +0800
+@@ -40,6 +40,14 @@
+ #include <linux/gfp.h>
+ #include <linux/module.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /* People can turn this off for buggy TCP's found in printers etc. */
+ int sysctl_tcp_retrans_collapse __read_mostly = 1;
+ 
+@@ -793,7 +801,7 @@
+  * We are working here with either a clone of the original
+  * SKB, or a fresh unique copy made by the retransmit engine.
+  */
+-static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
++static int BCMFASTPATH_HOST tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
+ 			    gfp_t gfp_mask)
+ {
+ 	const struct inet_connection_sock *icsk = inet_csk(sk);
+@@ -1254,7 +1262,7 @@
+ /* Compute the current effective MSS, taking SACKs and IP options,
+  * and even PMTU discovery events into account.
+  */
+-unsigned int tcp_current_mss(struct sock *sk)
++unsigned int BCMFASTPATH_HOST tcp_current_mss(struct sock *sk)
+ {
+ 	const struct tcp_sock *tp = tcp_sk(sk);
+ 	const struct dst_entry *dst = __sk_dst_get(sk);
+@@ -1739,7 +1747,7 @@
+  * Returns 1, if no segments are in flight and we have queued segments, but
+  * cannot send anything now because of SWS or another problem.
+  */
+-static int tcp_write_xmit(struct sock *sk, unsigned int mss_now, int nonagle,
++static int BCMFASTPATH_HOST tcp_write_xmit(struct sock *sk, unsigned int mss_now, int nonagle,
+ 			  int push_one, gfp_t gfp)
+ {
+ 	struct tcp_sock *tp = tcp_sk(sk);
+--- a/net/netfilter/core.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/netfilter/core.c	2013-06-02 16:54:50.852000038 +0800
+@@ -25,6 +25,14 @@
+ 
+ #include "nf_internals.h"
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ static DEFINE_MUTEX(afinfo_mutex);
+ 
+ const struct nf_afinfo __rcu *nf_afinfo[NFPROTO_NUMPROTO] __read_mostly;
+@@ -121,7 +129,7 @@
+ }
+ EXPORT_SYMBOL(nf_unregister_hooks);
+ 
+-unsigned int nf_iterate(struct list_head *head,
++unsigned int BCMFASTPATH_HOST nf_iterate(struct list_head *head,
+ 			struct sk_buff *skb,
+ 			unsigned int hook,
+ 			const struct net_device *indev,
+--- a/net/netfilter/nf_conntrack_core.c	2013-05-31 23:58:56.998354001 +0800
++++ b/net/netfilter/nf_conntrack_core.c	2013-06-02 16:53:47.880000069 +0800
+@@ -47,6 +47,14 @@
+ #include <net/netfilter/nf_nat.h>
+ #include <net/netfilter/nf_nat_core.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ #define NF_CONNTRACK_VERSION	"0.5.0"
+ 
+ int (*nfnetlink_parse_nat_setup_hook)(struct nf_conn *ct,
+@@ -93,7 +101,7 @@
+ 	return __hash_bucket(hash, net->ct.htable_size);
+ }
+ 
+-static u_int32_t __hash_conntrack(const struct nf_conntrack_tuple *tuple,
++static u_int32_t BCMFASTPATH_HOST __hash_conntrack(const struct nf_conntrack_tuple *tuple,
+ 				  u16 zone, unsigned int size)
+ {
+ 	return __hash_bucket(hash_conntrack_raw(tuple, zone), size);
+@@ -317,7 +325,7 @@
+  * OR
+  * - Caller must lock nf_conntrack_lock before calling this function
+  */
+-static struct nf_conntrack_tuple_hash *
++static struct nf_conntrack_tuple_hash * BCMFASTPATH_HOST 
+ ____nf_conntrack_find(struct net *net, u16 zone,
+ 		      const struct nf_conntrack_tuple *tuple, u32 hash)
+ {
+@@ -363,7 +371,7 @@
+ EXPORT_SYMBOL_GPL(__nf_conntrack_find);
+ 
+ /* Find a connection corresponding to a tuple. */
+-static struct nf_conntrack_tuple_hash *
++static struct nf_conntrack_tuple_hash * BCMFASTPATH_HOST 
+ __nf_conntrack_find_get(struct net *net, u16 zone,
+ 			const struct nf_conntrack_tuple *tuple, u32 hash)
+ {
+@@ -913,7 +921,7 @@
+ 	return ct;
+ }
+ 
+-unsigned int
++unsigned int BCMFASTPATH_HOST 
+ nf_conntrack_in(struct net *net, u_int8_t pf, unsigned int hooknum,
+ 		struct sk_buff *skb)
+ {
+--- a/net/netfilter/nf_conntrack_proto_tcp.c	2013-05-31 23:58:57.110354001 +0800
++++ b/net/netfilter/nf_conntrack_proto_tcp.c	2013-06-02 16:56:05.760000062 +0800
+@@ -29,6 +29,14 @@
+ #include <net/netfilter/ipv4/nf_conntrack_ipv4.h>
+ #include <net/netfilter/ipv6/nf_conntrack_ipv6.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /* Do not check the TCP window for incoming packets  */
+ static int nf_ct_tcp_no_window_check __read_mostly = 1;
+ 
+@@ -766,7 +774,7 @@
+ };
+ 
+ /* Protect conntrack agaist broken packets. Code taken from ipt_unclean.c.  */
+-static int tcp_error(struct net *net, struct nf_conn *tmpl,
++static int BCMFASTPATH_HOST tcp_error(struct net *net, struct nf_conn *tmpl,
+ 		     struct sk_buff *skb,
+ 		     unsigned int dataoff,
+ 		     enum ip_conntrack_info *ctinfo,
+@@ -821,7 +829,7 @@
+ }
+ 
+ /* Returns verdict for packet, or -1 for invalid. */
+-static int tcp_packet(struct nf_conn *ct,
++static int BCMFASTPATH_HOST tcp_packet(struct nf_conn *ct,
+ 		      const struct sk_buff *skb,
+ 		      unsigned int dataoff,
+ 		      enum ip_conntrack_info ctinfo,
+--- a/net/sched/sch_generic.c	2012-06-01 15:16:13.000000000 +0800
++++ b/net/sched/sch_generic.c	2013-06-02 16:35:50.713818706 +0800
+@@ -28,6 +28,14 @@
+ #include <net/pkt_sched.h>
+ #include <net/dst.h>
+ 
++#ifdef CONFIG_BCM47XX
++#include <typedefs.h>
++#include <bcmdefs.h>
++#else
++#define BCMFASTPATH
++#define BCMFASTPATH_HOST
++#endif
++
+ /* Main transmission queue. */
+ 
+ /* Modifications to data participating in scheduling must be protected with
+@@ -187,7 +195,7 @@
+ 	return sch_direct_xmit(skb, q, dev, txq, root_lock);
+ }
+ 
+-void __qdisc_run(struct Qdisc *q)
++void BCMFASTPATH __qdisc_run(struct Qdisc *q)
+ {
+ 	int quota = weight_p;
+ 
+@@ -446,7 +454,7 @@
+ 	return priv->q + band;
+ }
+ 
+-static int pfifo_fast_enqueue(struct sk_buff *skb, struct Qdisc *qdisc)
++static int BCMFASTPATH pfifo_fast_enqueue(struct sk_buff *skb, struct Qdisc *qdisc)
+ {
+ 	if (skb_queue_len(&qdisc->q) < qdisc_dev(qdisc)->tx_queue_len) {
+ 		int band = prio2band[skb->priority & TC_PRIO_MAX];

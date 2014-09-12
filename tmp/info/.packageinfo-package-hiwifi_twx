@@ -1,0 +1,128 @@
+Source-Makefile: package/package-hiwifi/twx/Makefile
+Package: twx
+Submenu: Twx
+Version: 2130-20140620-02
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +nixio +lua +luasec +lsqlite3 +libtw-lua +libhiwifi-lua +libauth
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: net
+Category: Turbo Wireless
+Title: Turbo Wireless X
+Maintainer: Turbo Wireless Developers Team <wong@turboer.com>
+Source: 
+Type: ipkg
+Description: Turbo Wireless X
+http://turbo.wong/
+Turbo Wireless Developers Team <wong@turboer.com>
+@@
+
+Package: twx-3g
+Submenu: Twx
+Version: 2130-20140620-02
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +twx
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: net
+Category: Turbo Wireless
+Title: Turbo Wireless X 3g module
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Turbo Wireless X 3g module
+http://turbo.wong/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: twx-6361
+Submenu: Twx
+Version: 2130-20140620-02
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +twx
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: net
+Category: Turbo Wireless
+Title: Turbo Wireless X 6361 Arch Specific
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Turbo Wireless X 6361 Arch Specific
+http://turbo.wong/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: twx-566X
+Submenu: Twx
+Version: 2130-20140620-02
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +twx
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: net
+Category: Turbo Wireless
+Title: Turbo Wireless X 566X Arch Specific
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Turbo Wireless X 566X Arch Specific
+http://turbo.wong/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: twx-5761
+Submenu: Twx
+Version: 2130-20140620-02
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +twx
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: net
+Category: Turbo Wireless
+Title: Turbo Wireless X 5761 Arch Specific
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Turbo Wireless X 5761 Arch Specific
+http://turbo.wong/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: twx-BL-855R
+Submenu: Twx
+Version: 2130-20140620-02
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +twx
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: net
+Category: Turbo Wireless
+Title: Turbo Wireless X BL-855R Arch Specific
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Turbo Wireless X BL-855R Arch Specific
+http://turbo.wong/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+Package: twx-BL-H750AC
+Submenu: Twx
+Version: 2130-20140620-02
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +twx
+Menu-Depends: 
+Provides: 
+Build-Depends: lua/host
+Section: net
+Category: Turbo Wireless
+Title: Turbo Wireless X BL-H750AC Arch Specific
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Turbo Wireless X BL-H750AC Arch Specific
+http://turbo.wong/
+OpenWrt Developers Team <openwrt-devel@openwrt.org>
+@@
+
+

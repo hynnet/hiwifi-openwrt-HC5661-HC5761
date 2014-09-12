@@ -1,0 +1,15 @@
+prefix=/usr
+exec_prefix=/usr
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+giomoduledir=${libdir}/gio/modules
+glib_compile_schemas=/usr/bin/glib-compile-schemas
+
+Name: GIO
+Description: glib I/O library
+Version: 2.26.1
+Requires: glib-2.0,gobject-2.0,gmodule-no-export-2.0
+Libs: -L${libdir} -lgio-2.0
+Libs.private: -L/home/hiwifi/openwrt-trunk-hiwifi/staging_dir/target-mipsel_r2_uClibc-0.9.33.2/usr/lib -lz   
+Cflags: 

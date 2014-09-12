@@ -1,0 +1,28 @@
+--- a/drivers/pci/setup-irq.c
++++ b/drivers/pci/setup-irq.c
+@@ -25,6 +25,11 @@
+ {
+ 	u8 pin, slot;
+ 	int irq = 0;
++
++#ifdef CONFIG_BCM47XX
++	if (pci_domain_nr(dev->bus) == 0)
++		return;
++#endif
+ 
+ 	/* If this device is not on the primary bus, we need to figure out
+ 	   which interrupt pin it will come in on.   We know which slot it
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1498,6 +1498,11 @@
+ 	/* Reserve buses for SR-IOV capability. */
+ 	max += pci_iov_bus_range(bus);
+ 
++#ifdef CONFIG_BCM47XX
++	if (pci_domain_nr(bus) && pci_is_root_bus(bus))
++		max += pci_domain_nr(bus) - 1;
++#endif
++
+ 	/*
+ 	 * After performing arch-dependent fixup of the bus, look behind
+ 	 * all PCI-to-PCI bridges on this bus.

@@ -1,0 +1,19 @@
+Source-Makefile: package/package-hiwifi/accelerator/Makefile
+Package: accelerator
+Submenu: Accelerator/Uploader
+Version: 0.0.5-20131227
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libpthread +libstdcpp
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Turbo Wireless
+Title: accelerator
+Maintainer: Qin Wei <wei.qin@hiwifi.tw>
+Source: 
+Type: ipkg
+Description: 	accelerator is a multiple task uploader for skydrive, developed by Qin Wei <wei.qin@hiwifi.tw>
+http://www.turboer.com/
+Qin Wei <wei.qin@hiwifi.tw>
+@@
+
+

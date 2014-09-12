@@ -1,0 +1,18 @@
+Source-Makefile: package/package-hiwifi/p2pclient/Makefile
+Package: p2pclient
+Version: 0.2.32-20140109
+Depends: +libc +USE_EGLIBC:librt +USE_EGLIBC:libpthread +libtw +librt +libpthread +libstdcpp
+Menu-Depends: 
+Provides: 
+Section: net
+Category: Turbo Wireless
+Title: P2SP download peer
+Maintainer: BaiFan <imbaifan@sina.com>
+Source: 
+Type: ipkg
+Description:  p2pclient description
+http://www.turboer.com/
+BaiFan <imbaifan@sina.com>
+@@
+
+

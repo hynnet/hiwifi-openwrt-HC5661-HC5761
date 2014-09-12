@@ -1,0 +1,3 @@
+config upnpaudioplayer 'config'
+	option enabled '0'
+	option bname 'UPNP Audio Player'

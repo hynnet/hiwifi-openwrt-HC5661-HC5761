@@ -1,0 +1,1 @@
+upnpaudioplayer require gstreamer 0.10, not gstreamer 1.0 or latter.

@@ -1,0 +1,19 @@
+Source-Makefile: package/art-hornet/Makefile
+Package: kmod-art-hornet
+Submenu: Wireless Drivers
+Version: <LINUX_VERSION>+2.67-1
+Depends: @TARGET_ar71xx||BROKEN
+Menu-Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Atheros Radio Test
+Maintainer: Abu Cheng <xinggu.zheng@hiwifi.tw>
+Source: 
+Type: ipkg
+Description:  This package contains a driver for Atheros Radio Test.
+http://www.macrohard.com.cn/
+Abu Cheng <xinggu.zheng@hiwifi.tw>
+@@
+
+

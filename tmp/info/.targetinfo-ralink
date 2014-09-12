@@ -1,0 +1,160 @@
+Source-Makefile: target/linux/ralink/Makefile
+Target: ralink
+Target-Board: ralink
+Target-Name: Ralink Soc
+Target-Path: /home/hiwifi/hc5761/platform
+Target-Arch: mipsel
+Target-Arch-Packages: ralink
+Target-Features: squashfs
+Target-Depends: 
+Target-Optimization: -Os -pipe -mips32r2 -mtune=mips32r2 -fno-caller-saves
+Linux-Version: 3.3.8
+Linux-Release: 1
+Linux-Kernel-Arch: mips
+Target-Description:
+	Build firmware images for Ralink Soc(MT7620N/A) Boards
+@@
+Default-Packages: base-files libc libgcc busybox dropbear mtd uci opkg hotplug2 netifd dnsmasq iptables ppp ppp-mod-pppoe kmod-ipt-nathelper firewall wireless-tools kmod-leds-gpio kmod-ledtrig-gpio kmod-ledtrig-timer kmod-ledtrig-netdev kmode-ledtrig-default-on kmod-gpio-button-hotplug util-switch
+Target: ralink/mt7620
+Target-Board: ralink
+Target-Name: MT7620N/A based boards
+Target-Path: target/linux/ralink
+Target-Arch: mipsel
+Target-Arch-Packages: ralink
+Target-Features: gpio pci squashfs usb
+Target-Depends: 
+Target-Optimization: -Os -pipe -mips32r2 -mtune=mips32r2 -fno-caller-saves
+Linux-Version: 3.3.8
+Linux-Release: 1
+Linux-Kernel-Arch: mips
+Target-Description:
+	Build firmware images for Ralink Soc(MT7620N/A) Boards
+@@
+Default-Packages: base-files libc libgcc busybox dropbear mtd uci opkg hotplug2 netifd dnsmasq iptables ppp ppp-mod-pppoe kmod-ipt-nathelper firewall wireless-tools kmod-leds-gpio kmod-ledtrig-gpio kmod-ledtrig-timer kmod-ledtrig-netdev kmode-ledtrig-default-on kmod-gpio-button-hotplug util-switch
+Target-Profile: HC5661
+Target-Profile-Name: Hiwifi Wireless HC5661 Board
+Target-Profile-Packages: kmod-usb-core kmod-usb2 kmod-ledtrig-usbdev
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Default package set compatible with Hiwifi Wireless HC5661 Board.
+@@
+
+Target-Profile: HC5761
+Target-Profile-Name: Hiwifi Wireless HC5761 Board
+Target-Profile-Packages: kmod-usb-core kmod-usb2 kmod-ledtrig-usbdev
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Default package set compatible with Hiwifi Wireless HC5761 Board.
+@@
+
+Target-Profile: HB5881
+Target-Profile-Name: HiWiFi Wireless HB5881 Board
+Target-Profile-Packages: kmod-usb-core kmod-usb2
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Default package set compatible with HiWiFi Wireless HB5881(MT7620A + MT7610E + PoE) Board.
+@@
+
+Target-Profile: HC5861
+Target-Profile-Name: HiWiFi Wireless HC5861 Board
+Target-Profile-Packages: kmod-usb-core kmod-usb2
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Default package set compatible with HiWiFi Wireless HC5861(MT7620A + MT7612E) Board.
+@@
+
+Target-Profile: HC5663
+Target-Profile-Name: Hiwifi Wireless HC5663 Board
+Target-Profile-Packages: kmod-usb-core kmod-usb2 kmod-ledtrig-usbdev kmod-ata-core kmod-ata-ahci
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Default package set compatible with Hiwifi Wireless HC5663 Board.
+@@
+
+Target-Profile: HB5981m
+Target-Profile-Name: Hiwifi Wireless HB5981 master Board
+Target-Profile-Packages: kmod-usb-core kmod-usb2 kmod-ledtrig-usbdev kmod-ata-core kmod-ata-ahci icpuc
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Default package set compatible with Hiwifi Wireless HB5981 master Board.
+@@
+
+Target-Profile: HB5981s
+Target-Profile-Name: Hiwifi Wireless HB5981 slave Board
+Target-Profile-Packages: kmod-usb-core kmod-usb2 kmod-ledtrig-usbdev icpuc
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Default package set compatible with Hiwifi Wireless HB5981 Slave Board.
+@@
+
+Target-Profile: HC5641
+Target-Profile-Name: HiWiFi Wireless HC5641 Board
+Target-Profile-Packages: kmod-usb-core kmod-usb2 kmod-ledtrig-usbdev
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Default package set compatible with HiWiFi Wireless HC5641 Board.
+@@
+
+Target-Profile: HB5811
+Target-Profile-Name: HiWiFi Wireless HB5811 AP Board
+Target-Profile-Packages: 
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Default package set compatible with HiWiFi Wireless HB5811 AP Board(with HB5881).
+@@
+
+Target: ralink/mt7620a-custom
+Target-Board: ralink
+Target-Name: MT7620N/A based boards(custom)
+Target-Path: target/linux/ralink
+Target-Arch: mipsel
+Target-Arch-Packages: ralink
+Target-Features: gpio pci squashfs usb
+Target-Depends: 
+Target-Optimization: -Os -pipe -mips32r2 -mtune=mips32r2 -fno-caller-saves
+Linux-Version: 3.3.8
+Linux-Release: 1
+Linux-Kernel-Arch: mips
+Target-Description:
+	Build firmware images for Ralink Soc(MT7620N/A) Boards
+@@
+Default-Packages: base-files libc libgcc busybox dropbear mtd uci opkg hotplug2 netifd dnsmasq iptables ppp ppp-mod-pppoe kmod-ipt-nathelper firewall wireless-tools kmod-leds-gpio kmod-ledtrig-gpio kmod-ledtrig-timer kmod-ledtrig-netdev kmode-ledtrig-default-on kmod-gpio-button-hotplug util-switch
+Target-Profile: HB750ACH
+Target-Profile-Name: HiWiFi Wireless HB750ACH Customer Board
+Target-Profile-Packages: kmod-usb-core kmod-usb2
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Default package set compatible with HiWiFi Wireless HB750ACH Customer Board.
+@@
+
+Target-Profile: HB845H
+Target-Profile-Name: Hiwifi Wireless HB845H Customer Board
+Target-Profile-Packages: 
+Target-Profile-Config: 
+
+@@
+Target-Profile-Description:
+	Default package set compatible with Hiwifi Wireless HB845H Customer Board.
+@@
+
+
