@@ -1,0 +1,33 @@
+--- a/utils.c	2013-06-16 00:25:36.637977000 +0800
++++ b/utils.c	2013-06-16 00:26:05.069976741 +0800
+@@ -298,6 +298,7 @@
+ 		ends_with(file, ".m2t") || ends_with(file, ".mkv")   ||
+ 		ends_with(file, ".vob") || ends_with(file, ".ts")    ||
+ 		ends_with(file, ".flv") || ends_with(file, ".xvid")  ||
++		ends_with(file, ".rm") || ends_with(file, ".rmvb")  ||
+ #ifdef TIVO_SUPPORT
+ 		ends_with(file, ".TiVo") ||
+ #endif
+--- a/metadata.c	2013-06-16 00:27:29.645974000 +0800
++++ b/metadata.c	2013-06-16 00:27:52.821973367 +0800
+@@ -841,6 +841,8 @@
+ 			xasprintf(&m.mime, "video/x-matroska");
+ 		else if( strcmp(ctx->iformat->name, "flv") == 0 )
+ 			xasprintf(&m.mime, "video/x-flv");
++		else if( strcmp(ctx->iformat->name, "rm") == 0 || strcmp(ctx->iformat->name, "rmvb") == 0)
++			xasprintf(&m.mime, "video/x-pn-realvideo");
+ 		if( m.mime )
+ 			goto video_no_dlna;
+ 
+--- a/upnpglobalvars.h	2013-06-16 01:13:14.349888157 +0800
++++ b/upnpglobalvars.h	2013-06-16 01:11:49.765890805 +0800
+@@ -168,7 +168,8 @@
+ 	"http-get:*:audio/mp4:*," \
+ 	"http-get:*:audio/x-wav:*," \
+ 	"http-get:*:audio/x-flac:*," \
+-	"http-get:*:application/ogg:*"
++	"http-get:*:application/ogg:*,"\
++	"http-get:*:video/x-pn-realvideo:*"
+ 
+ #define DLNA_FLAG_DLNA_V1_5      0x00100000
+ #define DLNA_FLAG_HTTP_STALLING  0x00200000

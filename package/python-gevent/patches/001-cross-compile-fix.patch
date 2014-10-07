@@ -1,0 +1,16 @@
+diff -Nur a/setup.py b/setup.py
+--- a/setup.py	2013-11-27 00:25:45.000000000 +0800
++++ b/setup.py	2014-02-04 14:13:59.630682834 +0800
+@@ -51,8 +51,10 @@
+ 
+ define_macros = []
+ libraries = []
+-libev_configure_command = ["/bin/sh", abspath('libev/configure'), '> configure-output.txt']
+-ares_configure_command = ["/bin/sh", abspath('c-ares/configure'), 'CONFIG_COMMANDS= CONFIG_FILES= > configure-output.txt']
++arch = os.environ.get("ARCH")
++configure_cmd = "--target=%s-openwrt-linux --host=%s-openwrt-linux" % (arch, arch)
++libev_configure_command = ["/bin/sh", abspath('libev/configure'), configure_cmd]
++ares_configure_command = ["/bin/sh", abspath('c-ares/configure'), configure_cmd + " CONFIG_COMMANDS= CONFIG_FILES="]
+ 
+ 
+ if sys.platform == 'win32':
